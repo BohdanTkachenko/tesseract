@@ -11,7 +11,7 @@ endef
 
 $(foreach dir,$(DIRS),$(eval apply-$(dir):; terraform -chdir="$(dir)" apply -var-file="$(SECRETS)"))
 $(foreach dir,$(DIRS),$(eval upgrade-$(dir):; terraform -chdir="$(dir)" init --upgrade))
-$(foreach dir,$(DIRS),$(eval destroy-$(dir):; terraform -chdir="$(dir)" destroy))
+$(foreach dir,$(DIRS),$(eval destroy-$(dir):; terraform -chdir="$(dir)" destroy -var-file="$(SECRETS)"))
 
 apply: $(addprefix apply-,$(DIRS))
 upgrade: $(addprefix upgrade-,$(DIRS))
