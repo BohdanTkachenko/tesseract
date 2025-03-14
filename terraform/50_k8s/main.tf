@@ -20,3 +20,11 @@ module "system" {
   cert_manager_cloudflare_api_token = var.cert_manager_cloudflare_api_token
   storage_classes                   = var.storage_classes
 }
+
+module "apps" {
+  depends_on = [module.system]
+  source     = "./apps"
+  providers = {
+    helm = helm
+  }
+}
