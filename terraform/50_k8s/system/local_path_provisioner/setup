@@ -1,0 +1,10 @@
+#!/bin/sh
+set -xeu
+apk add btrfs-progs
+
+dir="/rootfs/${VOL_DIR}"
+
+if [ ! -d "${dir}" ]; then
+    btrfs subvolume create -p "${dir}"
+fi
+btrfs qgroup limit "${VOL_SIZE_BYTES}" "${dir}"

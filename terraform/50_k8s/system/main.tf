@@ -49,3 +49,19 @@ module "coredns" {
   gateway_ip = local.gateway_ip
   domains    = local.domains
 }
+
+module "local_path_provisioner" {
+  depends_on = [module.cilium]
+  source     = "./local_path_provisioner"
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
+
+  namespace = "kube-local-path-storage"
+  node_name = "tesseract.sh"
+  storage_classes = {
+    fast_local_path = "/var/lib/volumes"
+    slow_local_path = "/mnt/hdd/volumes"
+  }
+}

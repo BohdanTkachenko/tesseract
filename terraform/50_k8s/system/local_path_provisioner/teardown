@@ -1,0 +1,13 @@
+#!/bin/sh
+set -xeu
+# apk add btrfs-progs
+
+# dir="/rootfs/${VOL_DIR}"
+# deleted_dir="$(dirname $dir)/.deleted"
+# snapshot_dir="${deleted_dir}/$(basename $dir)-$(date +%Y%m%d%H%M%S)"
+
+# if [ ! -d "${dir}" ]; then
+#     mkdir -p "$deleted_dir"
+#     btrfs subvolume snapshot -r "$dir" "$snapshot_dir"
+#     btrfs subvolume delete "$dir"
+# fi
