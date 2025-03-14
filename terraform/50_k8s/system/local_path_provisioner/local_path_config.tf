@@ -6,20 +6,6 @@ resource "kubernetes_config_map_v1_data" "local_path_config" {
   }
   force = true
   data = {
-    "config.json" = jsonencode({
-      nodePathMap = [
-        {
-          node  = "DEFAULT_PATH_FOR_NON_LISTED_NODES"
-          paths = []
-        },
-        {
-          node  = var.node_name
-          paths = [for name, path in var.storage_classes : path]
-        }
-      ]
-    })
     "helperPod.yaml" = "${file("${path.module}/helper_pod.yaml")}"
-    "setup"          = "${file("${path.module}/setup")}"
-    "teardown"       = "${file("${path.module}/teardown")}"
   }
 }
