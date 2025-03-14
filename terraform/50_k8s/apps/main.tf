@@ -27,6 +27,31 @@ module "media" {
   tvshows_quota                  = "20Ti"
 }
 
+module "stash" {
+  source = "./stash"
+  providers = {
+    helm = helm
+  }
+
+  namespace                          = "stash"
+  stash_domain                       = "stash.tesseract.sh"
+  stash_ip                           = "10.42.0.69"
+  stash_config_storage_class_name    = "fast-local-path"
+  stash_config_quota                 = "100Mi"
+  stash_metadata_storage_class_name  = "fast-local-path"
+  stash_metadata_quota               = "1Gi"
+  stash_cache_storage_class_name     = "fast-local-path"
+  stash_cache_quota                  = "1Gi"
+  stash_blobs_storage_class_name     = "fast-local-path"
+  stash_blobs_quota                  = "10Gi"
+  stash_generated_storage_class_name = "fast-local-path"
+  stash_generated_quota              = "200Gi"
+  videos_storage_class_name          = "slow-local-path"
+  videos_quota                       = "5Ti"
+  images_storage_class_name          = "slow-local-path"
+  images_quota                       = "10Gi"
+}
+
 module "whoami" {
   source = "./whoami"
   providers = {
