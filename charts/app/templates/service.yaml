@@ -1,0 +1,22 @@
+{{- if gt (len .Values.ports) 0 }}
+apiVersion: v1
+kind: Service
+metadata:
+  name:  {{ .Values.name }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "app.selectorLabels" . | nindent 4 }}
+  type: {{ .Values.service.type }}
+  {{- if eq .Values.service.type "LoadBalancer" }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
+  ports:
+    {{- range $name, $config := .Values.ports }}
+    - name: {{ $name }}
+      protocol: {{ $config.protocol }}
+      port: {{ $config.containerPort }}
+      targetPort: {{ $config.targetPort }}
+    {{- end }} 
+{{- end }}

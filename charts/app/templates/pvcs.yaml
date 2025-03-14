@@ -1,0 +1,19 @@
+{{ $labels := include "app.labels" . }}
+{{- range $name, $vol := .Values.volumes.persistent }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- $labels | nindent 4 }}
+  annotations:
+    volumeType: local
+spec:
+  storageClassName: {{ $vol.storageClassName }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $vol.quota }}
+{{- end }}
