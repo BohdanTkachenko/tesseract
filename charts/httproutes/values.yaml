@@ -1,0 +1,16 @@
+name: app
+gateway:
+  name: cilium
+  namespace: kube-cilium
+routes: {}
+# foo:
+#   hostnames:
+#     - test.example.com
+#   rules:
+#     - matches:
+#         - path:
+#             type: PathPrefix
+#             value: /
+#       backendRefs:
+#         - name: foo
+#           port: 4321
