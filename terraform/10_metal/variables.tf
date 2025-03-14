@@ -59,6 +59,16 @@ variable "remote_ca_path" {
   default = "/etc/kubernetes/pki/ca.crt"
 }
 
+variable "remote_resolv_conf_path" {
+  type    = string
+  default = "/etc/resolv.kubelet.conf"
+}
+
+variable "nameserver" {
+  type    = string
+  default = "10.0.0.1"
+}
+
 variable "local_ca_path" {
   type    = string
   default = "~/.kube/ca.crt"

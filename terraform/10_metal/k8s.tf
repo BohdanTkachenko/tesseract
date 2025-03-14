@@ -14,6 +14,7 @@ resource "ssh_resource" "k8s_init" {
   }
 
   commands = [
+    "echo 'nameserver ${var.nameserver}' | sudo install -m 644 /dev/stdin '${var.remote_resolv_conf_path}'",
     "sudo /usr/bin/kubeadm init --node-name=\"${var.node_name}\" --config=\"${var.remote_clusterconfig_path}\"",
   ]
 
@@ -34,6 +35,7 @@ resource "ssh_resource" "k8s_reset" {
   when = "destroy"
 
   commands = [
+    "sudo rm ${var.remote_resolv_conf_path}",
     "sudo /usr/bin/kubeadm reset -f",
     "sudo /usr/sbin/ipvsadm --clear",
     "rm -rf \"${var.remote_clusterconfig_path}\"",
@@ -103,6 +105,7 @@ resource "shell_script" "certificate_authority" {
       echo '${resource.ssh_resource.get_certificate_authority.result}' \
         | install -m 600 /dev/stdin '${local.local_ca_path}'
     EOT
+    read   = "echo '{}'"
     delete = <<-EOT
       rm -f '${local.local_ca_path}'
     EOT
@@ -213,6 +216,7 @@ resource "shell_script" "certificate" {
         | base64 -d \
         | install -m 600 /dev/stdin '${local.local_crt_path}'
     EOT
+    read   = "echo '{}'"
     delete = <<-EOT
       rm -f '${local.local_crt_path}'
     EOT
@@ -245,6 +249,7 @@ resource "shell_script" "kubeconfig" {
         --kubeconfig '${local.local_kubeconfig_path}' \
         use-context "$USER-context"
     EOT
+    read   = "echo '{}'"
     delete = <<-EOT
       kubectl config \
         --kubeconfig '${local.local_kubeconfig_path}' \
@@ -258,5 +263,36 @@ resource "shell_script" "kubeconfig" {
         --kubeconfig '${local.local_kubeconfig_path}' \
         delete-cluster '${var.node_name}'
     EOT
+  }
+}
+
+resource "shell_script" "remove_labels" {
+  depends_on = [shell_script.kubeconfig]
+
+  lifecycle_commands {
+    create = <<-EOT
+      kubectl --kubeconfig '${local.local_kubeconfig_path}' \
+        label nodes --all node.kubernetes.io/exclude-from-external-load-balancers-
+    EOT
+    read   = "echo '{}'"
+    delete = ""
+  }
+}
+
+resource "shell_script" "patch_resolv_conf_path" {
+  depends_on = [shell_script.kubeconfig]
+
+  lifecycle_commands {
+    create = <<-EOT
+      kubectl --kubeconfig '${local.local_kubeconfig_path}' \
+        get configmap \
+        -n kube-system \
+        kubelet-config \
+        -o yaml \
+      | sed -e "s|resolvConf: /run/systemd/resolve/resolv.conf|resolvConf: ${var.remote_resolv_conf_path}|" \
+      | kubectl --kubeconfig '${local.local_kubeconfig_path}' apply -f - -n kube-system
+    EOT
+    read   = "echo '{}'"
+    delete = ""
   }
 }
