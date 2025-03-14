@@ -50,6 +50,17 @@ module "coredns" {
   domains    = local.domains
 }
 
+module "dashboard" {
+  depends_on = [module.cilium]
+  source     = "./dashboard"
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
+
+  namespace = "kube-dashboard"
+}
+
 module "local_path_provisioner" {
   depends_on = [module.cilium]
   source     = "./local_path_provisioner"
