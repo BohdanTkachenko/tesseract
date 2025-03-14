@@ -1,0 +1,34 @@
+operator:
+  replicas: 1
+devices: ${network_interface}
+kubeProxyReplacement: true
+k8sServiceHost: ${host_ip}
+k8sServicePort: 6443
+k8sClientRateLimit:
+  qps: 30
+  burst: 60
+ipv4NativeRoutingCIDR: ${cluster_ipv4_network}
+# ipv6NativeRoutingCIDR: ${cluster_ipv6_network}
+# ipv6:
+#   enabled: true
+ipam:
+  mode: cluster-pool
+  operator:
+    clusterPoolIPv4PodCIDRList: ["${cluster_ipv4_network}"]
+    clusterPoolIPv4MaskSize: 24
+    clusterPoolIPv6PodCIDRList: ["${cluster_ipv6_network}"]
+    clusterPoolIPv6MaskSize: 120
+l2announcements:
+  enabled: true
+externalIPs:
+  enabled: true
+gatewayAPI:
+  enabled: true
+  secretsNamespace:
+    name: ${namespace}
+    create: false
+hubble:
+  relay:
+    enabled: true
+  ui:
+    enabled: true
