@@ -1,3 +1,7 @@
+# Project config
+.vscode/**/*
+
+# Generated scripts
 scripts/create_service_account_with_pub_key.sh
 
 ### Terraform ###
