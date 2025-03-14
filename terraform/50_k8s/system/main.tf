@@ -1,5 +1,6 @@
 locals {
   loadbalancer_ipv4_network = "10.42.0.0/24"
+  dns_ip                    = cidrhost(local.loadbalancer_ipv4_network, 53)
   gateway_ip                = cidrhost(local.loadbalancer_ipv4_network, 80)
   domains                   = ["tesseract.sh", "cyber.place"]
 }
@@ -7,9 +8,8 @@ locals {
 module "cilium" {
   source = "./cilium"
   providers = {
-    kubernetes = kubernetes
-    kubectl    = kubectl
-    helm       = helm
+    kubectl = kubectl
+    helm    = helm
   }
 
   namespace                 = "kube-cilium"
@@ -21,4 +21,17 @@ module "cilium" {
   host_ip                   = cidrhost(local.loadbalancer_ipv4_network, 1)
   gateway_ip                = local.gateway_ip
   domains                   = local.domains
+}
+
+module "coredns" {
+  depends_on = [module.cilium]
+  source     = "./coredns"
+  providers = {
+    helm = helm
+  }
+
+  namespace  = "kube-coredns-lan"
+  dns_ip     = local.dns_ip
+  gateway_ip = local.gateway_ip
+  domains    = local.domains
 }
