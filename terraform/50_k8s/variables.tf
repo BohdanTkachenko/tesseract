@@ -66,7 +66,7 @@ variable "cert_manager_cloudflare_api_token" {
 variable "storage_classes" {
   type = map(string)
   default = {
-    fast_local_path = "/var/lib/volumes"
-    slow_local_path = "/mnt/hdd/volumes"
+    fast-local-path = "/var/lib/volumes"
+    slow-local-path = "/mnt/hdd/volumes"
   }
 }
