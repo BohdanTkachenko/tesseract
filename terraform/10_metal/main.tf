@@ -1,4 +1,4 @@
-resource "ssh_sensitive_resource" "k8s_init" {
+resource "ssh_resource" "k8s_init" {
   file {
     source      = "${path.module}/clusterconfig.yaml"
     destination = var.remote_clusterconfig_path
@@ -6,7 +6,7 @@ resource "ssh_sensitive_resource" "k8s_init" {
   }
 
   commands = [
-    "sudo /usr/bin/kubeadm init --config=\"${var.remote_clusterconfig_path}\"",
+    "sudo /usr/bin/kubeadm init --node-name=\"${var.node_name}\" --config=\"${var.remote_clusterconfig_path}\"",
   ]
 
   agent               = var.ssh.agent
@@ -22,7 +22,12 @@ resource "ssh_sensitive_resource" "k8s_init" {
   bastion_private_key = var.ssh.bastion_private_key
 }
 
-resource "ssh_sensitive_resource" "k8s_reset" {
+output "k8s_init" {
+  depends_on = [ssh_resource.k8s_init]
+  value      = ssh_resource.k8s_init.result
+}
+
+resource "ssh_resource" "k8s_reset" {
   when = "destroy"
 
   commands = [
@@ -42,4 +47,9 @@ resource "ssh_sensitive_resource" "k8s_reset" {
   bastion_user        = var.ssh.bastion_user
   bastion_password    = var.ssh.bastion_password
   bastion_private_key = var.ssh.bastion_private_key
+}
+
+output "k8s_reset" {
+  depends_on = [ssh_resource.k8s_reset]
+  value      = ssh_resource.k8s_reset.result
 }

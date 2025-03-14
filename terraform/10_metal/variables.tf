@@ -29,6 +29,11 @@ variable "ssh" {
   }
 }
 
+variable "node_name" {
+  type    = string
+  default = "tesseract.sh"
+}
+
 variable "remote_clusterconfig_path" {
   type    = string
   default = "/var/lib/terraform/kubernetes-clusterconfig.yaml"
