@@ -23,6 +23,20 @@ module "cilium" {
   domains                   = local.domains
 }
 
+module "cert_manager" {
+  depends_on = [module.cilium]
+  source     = "./cert_manager"
+  providers = {
+    kubernetes = kubernetes
+    kubectl    = kubectl
+    helm       = helm
+  }
+
+  namespace            = "kube-cert-manager"
+  letsencrypt_email    = var.letsencrypt_email
+  cloudflare_api_token = var.cloudflare_api_token
+}
+
 module "coredns" {
   depends_on = [module.cilium]
   source     = "./coredns"
