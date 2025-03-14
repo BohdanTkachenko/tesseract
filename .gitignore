@@ -1,3 +1,7 @@
+scripts/create_service_account_with_pub_key.sh
+
+### Terraform ###
+
 # Local .terraform directories
 **/.terraform/*
 
