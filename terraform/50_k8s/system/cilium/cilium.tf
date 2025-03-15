@@ -1,5 +1,4 @@
 resource "helm_release" "cilium" {
-  depends_on       = [kubectl_manifest.gateway_crds]
   name             = "cilium"
   repository       = "https://helm.cilium.io/"
   chart            = "cilium"

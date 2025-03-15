@@ -1,4 +1,4 @@
-DIRS := 10_metal 50_k8s
+DIRS := 10_metal 45_k8s_crds 50_k8s
 SECRETS := $(realpath ../secret.tfvars)
 
 ifeq (,$(shell which terraform))

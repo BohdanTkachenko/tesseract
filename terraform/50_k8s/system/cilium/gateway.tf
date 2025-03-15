@@ -1,5 +1,5 @@
 resource "kubectl_manifest" "gateway" {
-  depends_on = [helm_release.cilium, kubectl_manifest.gateway_crds]
+  depends_on = [helm_release.cilium]
   yaml_body = yamlencode({
     "apiVersion" = "gateway.networking.k8s.io/v1"
     "kind"       = "Gateway"
