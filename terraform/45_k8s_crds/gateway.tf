@@ -11,6 +11,6 @@ data "http" "gateway_crd_specs" {
 }
 
 resource "kubectl_manifest" "gateway_crds" {
-  for_each  = data.http.gateway_crds
+  for_each  = data.http.gateway_crd_specs
   yaml_body = each.value.response_body
 }

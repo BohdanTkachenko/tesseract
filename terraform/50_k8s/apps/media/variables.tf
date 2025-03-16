@@ -2,6 +2,14 @@ variable "namespace" {
   type = string
 }
 
+variable "gateway_namespace" {
+  type = string
+}
+
+variable "gateway_name" {
+  type = string
+}
+
 variable "timezone" {
   type    = string
   default = "America/New_York"

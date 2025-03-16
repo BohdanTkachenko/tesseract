@@ -16,6 +16,8 @@ module "media" {
   }
 
   namespace                      = "media"
+  gateway_name                   = "cilium"
+  gateway_namespace              = "kube-cilium"
   timezone                       = "America/New_York"
   plex_domain                    = "plex.tesseract.sh"
   plex_ip                        = "10.42.0.32"
@@ -58,6 +60,8 @@ module "whoami" {
     helm = helm
   }
 
-  namespace     = "whoami"
-  whoami_domain = "whoami.tesseract.sh"
+  namespace         = "whoami"
+  gateway_name      = "cilium"
+  gateway_namespace = "kube-cilium"
+  whoami_domain     = "whoami.tesseract.sh"
 }

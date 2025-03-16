@@ -4,9 +4,9 @@ resource "kubernetes_manifest" "http_route" {
     kind       = "HTTPRoute"
     metadata = {
       namespace = var.namespace
-      name      = "whoami"
+      name      = "media"
       labels = {
-        "app.kubernetes.io/name" = "whoami"
+        "app.kubernetes.io/name" = "media"
       }
     }
     spec = {
@@ -16,13 +16,13 @@ resource "kubernetes_manifest" "http_route" {
           name      = var.gateway_name
         }
       ]
-      hostnames = [var.whoami_domain]
+      hostnames = [var.plex_domain]
       rules = [
         {
           backendRefs = [
             {
-              name = "whoami"
-              port = 80
+              name = "plex"
+              port = 32400
             }
           ]
         }
