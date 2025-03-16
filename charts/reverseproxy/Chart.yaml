@@ -1,5 +1,0 @@
-apiVersion: v2
-name: reverseproxy
-description: Simple reverse proxy to an external service
-type: application
-version: 0.0.0

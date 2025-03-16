@@ -1,6 +1,0 @@
-name: app
-address: 0.0.0.0
-ports:
-  http:
-    protocol: TCP
-    port: 80

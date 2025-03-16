@@ -5,6 +5,8 @@ module "homeassistant" {
   }
 
   namespace             = "homeassistant"
+  gateway_name          = "cilium"
+  gateway_namespace     = "kube-cilium"
   homeassistant_domain  = "home.cyber.place"
   homeassistant_address = "10.0.0.11"
 }
