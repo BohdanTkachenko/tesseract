@@ -38,6 +38,8 @@ module "stash" {
   }
 
   namespace                          = "stash"
+  gateway_name                       = "cilium"
+  gateway_namespace                  = "kube-cilium"
   stash_domain                       = "stash.tesseract.sh"
   stash_ip                           = "10.42.0.69"
   stash_config_storage_class_name    = "fast-local-path"
