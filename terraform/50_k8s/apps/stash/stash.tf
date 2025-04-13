@@ -1,6 +1,6 @@
 locals {
-  name = "stash"
-  ports = {
+  stash_name = "stash"
+  stash_ports = {
     dlna-udp = {
       protocol       = "UDP"
       container_port = 1900
@@ -22,29 +22,29 @@ locals {
 resource "kubernetes_deployment" "stash" {
   metadata {
     namespace = var.namespace
-    name      = local.name
+    name      = local.stash_name
     labels = {
-      "app.kubernetes.io/name" = local.name
+      "app.kubernetes.io/name" = local.stash_name
     }
   }
 
   spec {
     selector {
       match_labels = {
-        "app.kubernetes.io/name" = local.name
+        "app.kubernetes.io/name" = local.stash_name
       }
     }
 
     template {
       metadata {
         labels = {
-          "app.kubernetes.io/name" = local.name
+          "app.kubernetes.io/name" = local.stash_name
         }
       }
 
       spec {
         container {
-          name              = local.name
+          name              = local.stash_name
           image             = "stashapp/stash:latest"
           image_pull_policy = "IfNotPresent"
 
@@ -64,7 +64,7 @@ resource "kubernetes_deployment" "stash" {
           }
 
           dynamic "port" {
-            for_each = local.ports
+            for_each = local.stash_ports
             content {
               name           = port.key
               protocol       = port.value.protocol
@@ -108,7 +108,7 @@ resource "kubernetes_deployment" "stash" {
           }
 
           dynamic "volume_mount" {
-            for_each = local.volumes
+            for_each = local.stash_volumes
             content {
               name       = volume_mount.key
               mount_path = volume_mount.value.mount_path
@@ -125,7 +125,7 @@ resource "kubernetes_deployment" "stash" {
         }
 
         dynamic "volume" {
-          for_each = local.volumes
+          for_each = local.stash_volumes
           content {
             name = volume.key
             persistent_volume_claim {
@@ -141,22 +141,22 @@ resource "kubernetes_deployment" "stash" {
 resource "kubernetes_service" "stash" {
   metadata {
     namespace = var.namespace
-    name      = local.name
+    name      = local.stash_name
     labels = {
-      "app.kubernetes.io/name" = local.name
+      "app.kubernetes.io/name" = local.stash_name
     }
   }
 
   spec {
     selector = {
-      "app.kubernetes.io/name" = local.name
+      "app.kubernetes.io/name" = local.stash_name
     }
 
     type             = "LoadBalancer"
     load_balancer_ip = var.stash_ip
 
     dynamic "port" {
-      for_each = local.ports
+      for_each = local.stash_ports
       content {
         name        = port.key
         protocol    = port.value.protocol

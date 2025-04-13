@@ -56,6 +56,8 @@ module "stash" {
   videos_quota                       = "5Ti"
   images_storage_class_name          = "slow-local-path"
   images_quota                       = "10Gi"
+  vaultwarden_storage_class_name     = "fast-local-path"
+  vaultwarden_quota                  = "100Mi"
 }
 
 module "whoami" {

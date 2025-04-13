@@ -1,6 +1,6 @@
 
 locals {
-  volumes = {
+  stash_volumes = {
     stash-config = {
       storage_class_name = var.stash_config_storage_class_name
       mount_path         = "/root/.stash"
@@ -44,10 +44,18 @@ locals {
       read_only          = false
     }
   }
+  vaultwarden_volumes = {
+    vaultwarden = {
+      storage_class_name = var.vaultwarden_storage_class_name
+      mount_path         = "/data"
+      quota              = var.vaultwarden_quota
+      read_only          = false
+    }
+  }
 }
 
 resource "kubernetes_persistent_volume_claim" "pvc" {
-  for_each = local.volumes
+  for_each = merge(local.stash_volumes, local.vaultwarden_volumes)
   metadata {
     namespace = var.namespace
     name      = each.key

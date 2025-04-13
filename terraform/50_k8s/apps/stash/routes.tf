@@ -19,6 +19,22 @@ resource "kubernetes_manifest" "http_route" {
       hostnames = [var.stash_domain]
       rules = [
         {
+          matches = [
+            {
+              path = {
+                type  = "PathPrefix"
+                value = "/passwords"
+              }
+            }
+          ]
+          backendRefs = [
+            {
+              name = "vaultwarden"
+              port = 80
+            }
+          ]
+        },
+        {
           backendRefs = [
             {
               name = "stash"

@@ -73,3 +73,11 @@ variable "images_storage_class_name" {
 variable "images_quota" {
   type = string
 }
+
+variable "vaultwarden_storage_class_name" {
+  type = string
+}
+
+variable "vaultwarden_quota" {
+  type = string
+}
