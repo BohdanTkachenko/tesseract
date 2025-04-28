@@ -20,7 +20,7 @@ resource "libvirt_ignition" "test01" {
   content = data.ct_config.test01.rendered
 }
 
-resource "libvirt_domain" "master" {
+resource "libvirt_domain" "test01" {
   name            = "test01"
   coreos_ignition = libvirt_ignition.test01.id
 
