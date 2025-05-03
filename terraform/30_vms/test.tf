@@ -8,10 +8,10 @@ resource "libvirt_volume" "test01" {
 
 data "ct_config" "test01" {
   content = templatefile("${path.module}/butane/test01.bu", {
-    password_hash = bcrypt(var.core_password)
+    password_hash = var.core_password
   })
   strict       = true
-  pretty_print = false
+  pretty_print = true
 }
 
 resource "libvirt_ignition" "test01" {
