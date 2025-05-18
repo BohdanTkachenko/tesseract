@@ -14,19 +14,6 @@ variable "ssh" {
     bastion_password    = string
     bastion_private_key = string
   })
-  default = {
-    agent               = false
-    host                = "tesseract.lan"
-    port                = 22
-    user                = "terraform"
-    password            = null
-    private_key         = "~/.ssh/terraform"
-    bastion_host        = null
-    bastion_port        = null
-    bastion_user        = null
-    bastion_password    = null
-    bastion_private_key = null
-  }
 }
 
 variable "fcos" {
@@ -37,13 +24,6 @@ variable "fcos" {
     format       = string
     local_dir    = string
   })
-  default = {
-    stream_url   = "https://builds.coreos.fedoraproject.org/streams/stable.json"
-    architecture = "x86_64"
-    platform     = "qemu"
-    format       = "qcow2.xz"
-    local_dir    = "/tmp"
-  }
 }
 
 variable "k8s" {
@@ -51,10 +31,6 @@ variable "k8s" {
     version = string
     ca_path = string
   })
-  default = {
-    version = "1.32"
-    ca_path = "~/.kube/ca.crt"
-  }
 }
 
 variable "wireguard" {
@@ -76,6 +52,5 @@ variable "wireguard" {
 }
 
 variable "kubernetes_config_path" {
-  type    = string
-  default = "~/.kube/config"
+  type = string
 }

@@ -11,8 +11,7 @@ variable "gateway_name" {
 }
 
 variable "timezone" {
-  type    = string
-  default = "America/New_York"
+  type = string
 }
 
 variable "plex_domain" {

@@ -14,82 +14,56 @@ variable "ssh" {
     bastion_password    = string
     bastion_private_key = string
   })
-  default = {
-    agent               = false
-    host                = "tesseract.lan"
-    port                = 22
-    user                = "terraform"
-    password            = null
-    private_key         = "~/.ssh/terraform"
-    bastion_host        = null
-    bastion_port        = null
-    bastion_user        = null
-    bastion_password    = null
-    bastion_private_key = null
-  }
 }
 
 variable "node_name" {
-  type    = string
-  default = "tesseract.sh"
+  type = string
 }
 
 variable "api_server" {
-  type    = string
-  default = "https://tesseract.sh:6443"
+  type = string
 }
 
 variable "remote_kubeconfig_path" {
-  type    = string
-  default = "$HOME/.kube/config"
+  type = string
 }
 
 variable "remote_admin_kubeconfig_path" {
-  type    = string
-  default = "/etc/kubernetes/admin.conf"
+  type = string
 }
 
 variable "remote_clusterconfig_path" {
-  type    = string
-  default = "/var/lib/terraform/kubernetes-clusterconfig.yaml"
+  type = string
 }
 
 variable "remote_ca_path" {
-  type    = string
-  default = "/etc/kubernetes/pki/ca.crt"
+  type = string
 }
 
 variable "remote_resolv_conf_path" {
-  type    = string
-  default = "/etc/resolv.kubelet.conf"
+  type = string
 }
 
 variable "nameserver" {
-  type    = string
-  default = "10.0.0.1"
+  type = string
 }
 
 variable "local_ca_path" {
-  type    = string
-  default = "~/.kube/ca.crt"
+  type = string
 }
 
 variable "local_key_path" {
-  type    = string
-  default = "~/.kube/kube.key"
+  type = string
 }
 
 variable "local_csr_path" {
-  type    = string
-  default = "~/.kube/kube.csr"
+  type = string
 }
 
 variable "local_crt_path" {
-  type    = string
-  default = "~/.kube/kube.crt"
+  type = string
 }
 
 variable "local_kubeconfig_path" {
-  type    = string
-  default = "~/.kube/config"
+  type = string
 }
