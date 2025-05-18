@@ -1,0 +1,5 @@
+[cri-o]
+name=cri-o
+stream=${k8s_version}
+profiles=
+state=enabled

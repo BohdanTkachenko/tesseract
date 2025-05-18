@@ -1,16 +1,9 @@
-locals {
-  fcos_stream_url   = "https://builds.coreos.fedoraproject.org/streams/stable.json"
-  fcos_architecture = "x86_64"
-  fcos_platform     = "qemu"
-  fcos_format       = "qcow2.xz"
-}
-
 data "http" "fcos_stream" {
-  url = local.fcos_stream_url
+  url = var.fcos.stream_url
 }
 
 locals {
-  fcos_remote_image = jsondecode(data.http.fcos_stream.response_body).architectures[local.fcos_architecture].artifacts[local.fcos_platform].formats[local.fcos_format].disk
+  fcos_remote_image = jsondecode(data.http.fcos_stream.response_body).architectures[var.fcos.architecture].artifacts[var.fcos.platform].formats[var.fcos.format].disk
 }
 
 resource "shell_script" "fcos_image" {
@@ -28,9 +21,9 @@ resource "shell_script" "fcos_image" {
   environment = {
     SCRIPT_DIR              = "${path.module}/scripts"
     REMOTE_URL              = "${local.fcos_remote_image.location}"
-    COMPRESSED_LOCAL_PATH   = "${var.tmp_dir}/${basename(local.fcos_remote_image.location)}"
+    COMPRESSED_LOCAL_PATH   = "${var.fcos.local_dir}/${basename(local.fcos_remote_image.location)}"
     COMPRESSED_SHA256_SUM   = local.fcos_remote_image.sha256
-    UNCOMPRESSED_LOCAL_PATH = "${var.tmp_dir}/${trimsuffix(basename(local.fcos_remote_image.location), ".xz")}"
+    UNCOMPRESSED_LOCAL_PATH = "${var.fcos.local_dir}/${trimsuffix(basename(local.fcos_remote_image.location), ".xz")}"
     UNCOMPRESSED_SHA256_SUM = local.fcos_remote_image["uncompressed-sha256"]
   }
 }
@@ -38,7 +31,7 @@ resource "shell_script" "fcos_image" {
 resource "libvirt_volume" "fcos" {
   depends_on = [resource.shell_script.fcos_image]
   name       = "fedora-coreos.qcow2"
-  pool       = libvirt_pool.default.name
+  pool       = var.pool_name
   source     = resource.shell_script.fcos_image.output.path
   format     = "qcow2"
 }

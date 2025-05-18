@@ -1,0 +1,8 @@
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: ${k8s_server}
+    token: ${k8s_token}
+    caCertHashes:
+      - sha256:${k8s_ca_hash}

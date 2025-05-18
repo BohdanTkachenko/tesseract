@@ -1,0 +1,19 @@
+[Unit]
+Description=Install rpm-ostree packages listed as filenames in /etc/rpm/packages.wants
+Wants=network-online.target
+After=network-online.target
+Before=zincati.service
+ConditionPathExists=!/var/cache/%N.stamp
+StartLimitBurst=5
+StartLimitIntervalSec=600s
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Restart=on-failure
+ExecStart=/var/usrlocal/bin/rpm-ostree-install-wanted-packages.sh
+ExecStart=/usr/bin/touch /var/cache/%N.stamp
+ExecStart=/usr/bin/systemctl --no-block reboot
+
+[Install]
+WantedBy=multi-user.target

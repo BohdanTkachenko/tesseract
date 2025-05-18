@@ -3,11 +3,6 @@ variable "kubernetes_config_path" {
   default = "~/.kube/config"
 }
 
-variable "node_name" {
-  type    = string
-  default = "tesseract.sh"
-}
-
 variable "network_interface" {
   type    = string
   default = "enp3s0"
@@ -64,9 +59,26 @@ variable "cert_manager_cloudflare_api_token" {
 }
 
 variable "storage_classes" {
-  type = map(string)
+  type = map(object({
+    path  = string
+    nodes = list(string)
+  }))
   default = {
-    fast-local-path = "/var/lib/volumes"
-    slow-local-path = "/mnt/hdd/volumes"
+    fast-local-path = {
+      path  = "/var/lib/volumes"
+      nodes = ["tesseract.sh"]
+    },
+    slow-local-path = {
+      path  = "/mnt/hdd/volumes"
+      nodes = ["tesseract.sh"]
+    },
+    media-fast-local = {
+      path  = "/var/lib/volumes/media"
+      nodes = ["seedbox"]
+    },
+    media-slow-local = {
+      path  = "/var/mnt/hdd/volumes/media",
+      nodes = ["seedbox"]
+    },
   }
 }

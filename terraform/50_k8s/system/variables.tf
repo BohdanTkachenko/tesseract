@@ -1,7 +1,3 @@
-variable "node_name" {
-  type = string
-}
-
 variable "network_interface" {
   type = string
 }
@@ -48,5 +44,8 @@ variable "cert_manager_cloudflare_api_token" {
 }
 
 variable "storage_classes" {
-  type = map(string)
+  type = map(object({
+    path  = string
+    nodes = list(string)
+  }))
 }

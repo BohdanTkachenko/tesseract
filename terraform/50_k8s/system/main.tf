@@ -63,6 +63,5 @@ module "local_path_provisioner" {
   }
 
   namespace       = "kube-local-path-storage"
-  node_name       = var.node_name
   storage_classes = var.storage_classes
 }

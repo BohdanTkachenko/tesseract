@@ -6,7 +6,6 @@ module "system" {
     helm       = helm
   }
 
-  node_name                         = var.node_name
   network_interface                 = var.network_interface
   network_cluster_ipv4              = var.network_cluster_ipv4
   network_cluster_ipv6              = var.network_cluster_ipv6

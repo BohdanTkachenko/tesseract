@@ -1,5 +1,5 @@
-resource "libvirt_network" "default" {
-  name      = "default"
+resource "libvirt_network" "main" {
+  name      = "main"
   mode      = "nat"
   addresses = ["10.42.123.0/24"]
 }

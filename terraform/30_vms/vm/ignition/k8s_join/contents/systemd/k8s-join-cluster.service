@@ -1,0 +1,14 @@
+[Unit]
+Description=Join K8s cluster
+After=network-online.target systemd-user-sessions.service
+ConditionPathExists=/usr/bin/kubelet
+ConditionPathExists=!/var/cache/%N.stamp
+
+[Service]
+Type=oneshot
+ExecStart=systemctl enable --now crio kubelet
+ExecStart=kubeadm join --config /etc/kubernetes/join-config.yaml
+ExecStart=/usr/bin/touch /var/cache/%N.stamp
+
+[Install]
+WantedBy=multi-user.target

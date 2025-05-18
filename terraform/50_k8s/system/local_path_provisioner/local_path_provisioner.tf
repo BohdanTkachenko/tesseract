@@ -17,7 +17,7 @@ resource "helm_release" "local_path_provisioner" {
     }
     nodePathMap = []
     storageClassConfigs = {
-      for name, path in var.storage_classes : name => {
+      for name, storage_class in var.storage_classes : name => {
         storageClass = {
           create            = true
           defaultClass      = false
@@ -26,16 +26,13 @@ resource "helm_release" "local_path_provisioner" {
           volumeBindingMode = "WaitForFirstConsumer"
           pathPattern       = "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
         }
-        nodePathMap = [
-          {
-            node  = "DEFAULT_PATH_FOR_NON_LISTED_NODES"
-            paths = []
-          },
-          {
-            node  = var.node_name
-            paths = [path]
-          }
-        ]
+        nodePathMap = concat([{
+          node  = "DEFAULT_PATH_FOR_NON_LISTED_NODES"
+          paths = []
+          }], [for node in storage_class.nodes : {
+          node  = node
+          paths = [storage_class.path]
+        }])
       }
     }
   })]
