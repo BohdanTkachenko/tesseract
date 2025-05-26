@@ -1,16 +1,22 @@
 locals {
-  fast_base_dir = "/var/lib/volumes"
-  slow_base_dir = "/mnt/hdd/volumes"
-
-  storage_classes = {
-    media_fast = local.fast_base_dir
-    media_slow = local.slow_base_dir
+  types = {
+    fast = "/var/lib/volumes"
+    slow = "/mnt/hdd/volumes"
   }
+
+  storage_classes = [
+    { namespace = "media", type = "fast" },
+    { namespace = "media", type = "slow" },
+
+    { namespace = "stash", type = "fast" },
+    { namespace = "stash", type = "slow" },
+  ]
 }
 
 inputs = {
-  for key, value in local.storage_classes : key => {
-    id   = "${replace(key, "_", "-")}-local"
-    path = "${value}/${key}"
+  for storage_class in local.storage_classes :
+  "${storage_class.namespace}_${storage_class.type}" => {
+    id   = "${replace(storage_class.namespace, "_", "-")}-${storage_class.type}-local"
+    path = "${local.types[storage_class.type]}/${storage_class.namespace}"
   }
 }
