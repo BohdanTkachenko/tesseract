@@ -14,6 +14,4 @@ terraform {
 
 provider "shell" {}
 
-provider "ssh" {
-  debug_log = "/tmp/terraform-ssh.log"
-}
+provider "ssh" {}

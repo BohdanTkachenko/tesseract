@@ -37,7 +37,7 @@ provider "http" {}
 provider "shell" {}
 
 provider "libvirt" {
-  uri = "qemu+ssh://${var.ssh.user}@${var.ssh.host}:${var.ssh.port}/system?keyfile=${var.ssh.private_key}"
+  uri = var.libvirt_ssh_connection_string
 }
 
 provider "ignition" {}
@@ -45,5 +45,5 @@ provider "ignition" {}
 provider "ssh" {}
 
 provider "kubernetes" {
-  config_path = var.kubernetes_config_path
+  config_path = var.kube_config_path
 }

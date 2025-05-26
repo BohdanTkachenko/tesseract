@@ -1,6 +1,5 @@
 variable "ssh" {
-  description = "Main node SSH connection details."
-  sensitive   = true
+  sensitive = true
   type = object({
     agent               = bool
     host                = string

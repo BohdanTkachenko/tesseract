@@ -1,4 +1,5 @@
-data "shell_script" "k8s_ca_hash" {
+data "shell_script" "k8s_info" {
+  depends_on = [shell_script.certificate_authority, shell_script.kubeconfig]
   lifecycle_commands {
     read = <<-EOT
       server=$( \
@@ -8,7 +9,7 @@ data "shell_script" "k8s_ca_hash" {
         | sed 's|^https\?://||' \
       )
       ca_hash=$( \
-        openssl x509 -pubkey -in ${var.k8s.ca_path} \
+        openssl x509 -pubkey -in ${pathexpand(var.local_ca_path)} \
         | openssl rsa -pubin -outform der 2>/dev/null \
         | openssl dgst -sha256 -hex | sed 's/^.* //' \
       )

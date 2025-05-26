@@ -1,4 +1,4 @@
-variable "kubernetes_config_path" {
+variable "kube_config_path" {
   type = string
 }
 
