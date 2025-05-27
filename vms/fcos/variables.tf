@@ -1,5 +1,6 @@
 variable "fcos" {
   type = object({
+    version      = number
     stream_url   = string
     architecture = string
     platform     = string

@@ -79,6 +79,7 @@ inputs = {
   }
 
   vm_base_fcos_image_remote = {
+    version      = 42
     stream_url   = "https://builds.coreos.fedoraproject.org/streams/stable.json"
     architecture = "x86_64"
     platform     = "qemu"

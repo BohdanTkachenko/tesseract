@@ -2,7 +2,7 @@ data "ignition_config" "config" {
   files = [
     data.ignition_file.hostname.rendered,
     data.ignition_file.systemd_pager.rendered,
-    data.ignition_file.wanted_package_qemu_guest_agent.rendered,
+    data.ignition_file.wanted_packages.rendered,
     data.ignition_file.rpm_ostree_install_wanted_packages.rendered,
   ]
 

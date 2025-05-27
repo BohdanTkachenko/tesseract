@@ -1,6 +1,10 @@
-data "ignition_file" "wanted_package_qemu_guest_agent" {
-  path = "/etc/rpm/packages.wants/qemu-guest-agent"
+data "ignition_file" "wanted_packages" {
+  path = "/etc/rpm/packages.wants/qemu"
   contents {
-    source = "data:,"
+    source = "data:text/plain;charset=utf-8;base64,${base64encode(
+      join("\n", [
+        "qemu-guest-agent"
+      ])
+    )}"
   }
 }

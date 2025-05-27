@@ -1,10 +1,9 @@
 data "ignition_config" "config" {
-  links = [data.ignition_link.resolv_conf.rendered]
   files = [
-    data.ignition_file.yum_repo_kubernetes.rendered,
     data.ignition_file.wanted_packages.rendered,
-    data.ignition_file.dnf_module_cri_o.rendered,
-    data.ignition_file.sysctl_kubernetes.rendered,
+  ]
+  systemd = [
+    data.ignition_systemd_unit.rpm_ostree_install_nvidia.rendered,
   ]
 }
 

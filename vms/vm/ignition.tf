@@ -4,11 +4,13 @@ module "ignition" {
     ignition = ignition
     ssh      = ssh
   }
-  hostname  = var.hostname
-  ssh       = var.ssh
-  wireguard = var.wireguard
-  k8s       = var.k8s
-  mounts    = local.mounts
+  hostname     = var.hostname
+  ssh          = var.ssh
+  fcos_version = var.fcos_version
+  nvidia       = var.nvidia
+  wireguard    = var.wireguard
+  k8s          = var.k8s
+  mounts       = local.mounts
 }
 
 resource "libvirt_ignition" "ignition" {

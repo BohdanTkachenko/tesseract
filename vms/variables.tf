@@ -21,6 +21,7 @@ variable "ssh" {
 
 variable "fcos" {
   type = object({
+    version      = number
     stream_url   = string
     architecture = string
     platform     = string
@@ -43,10 +44,18 @@ variable "kube_config_path" {
 
 variable "vms" {
   type = map(object({
+    labels        = map(string)
     vcpu          = number
     memory_mb     = number
     disk_size_gib = number
-    mounts        = list(string)
+    nvidia        = bool
+    host_devices = list(object({
+      source_bus   = string
+      source_slot  = string
+      address_bus  = string
+      address_slot = string
+    }))
+    mounts = list(string)
     wireguard = object({
       vpn_country   = string
       vpn_city      = string

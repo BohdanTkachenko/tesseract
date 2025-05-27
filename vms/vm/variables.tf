@@ -10,6 +10,10 @@ variable "memory_mb" {
   type = number
 }
 
+variable "fcos_version" {
+  type = string
+}
+
 variable "fcos_volume_id" {
   type = string
 }
@@ -24,6 +28,19 @@ variable "disk_size_gib" {
 
 variable "network_name" {
   type = string
+}
+
+variable "nvidia" {
+  type = string
+}
+
+variable "host_devices" {
+  type = list(object({
+    source_bus   = string
+    source_slot  = string
+    address_bus  = string
+    address_slot = string
+  }))
 }
 
 variable "mounts" {

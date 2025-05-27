@@ -1,0 +1,20 @@
+[Unit]
+Description=Install Nvidia drivers
+Wants=rpm-ostree-install-wanted-packages.service
+After=rpm-ostree-install-wanted-packages.service
+Before=zincati.service
+ConditionPathExists=!/var/cache/%N.stamp
+StartLimitBurst=5
+StartLimitIntervalSec=600s
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Restart=on-failure
+ExecStart=/usr/bin/rpm-ostree install --assumeyes akmod-nvidia xorg-x11-drv-nvidia-cuda
+ExecStart=/usr/bin/rpm-ostree kargs --append-if-missing="rd.blacklist=nouveau modprobe.blacklist=nouveau nvidia-drm.modeset=1"
+ExecStart=/usr/bin/touch /var/cache/%N.stamp
+ExecStart=/usr/bin/systemctl --no-block reboot
+
+[Install]
+WantedBy=multi-user.target

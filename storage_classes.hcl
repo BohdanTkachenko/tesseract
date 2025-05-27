@@ -1,7 +1,7 @@
 locals {
   types = {
     fast = "/var/lib/volumes"
-    slow = "/mnt/hdd/volumes"
+    slow = "/var/mnt/hdd/volumes"
   }
 
   storage_classes = [

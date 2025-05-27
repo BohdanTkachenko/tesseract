@@ -19,6 +19,14 @@ variable "ssh" {
   })
 }
 
+variable "fcos_version" {
+  type = number
+}
+
+variable "nvidia" {
+  type = bool
+}
+
 variable "k8s" {
   type = object({
     version = string

@@ -20,31 +20,16 @@ data "ignition_file" "dnf_module_cri_o" {
   }
 }
 
-
-data "ignition_file" "wanted_package_cri_o" {
-  path = "/etc/rpm/packages.wants/cri-o"
+data "ignition_file" "wanted_packages" {
+  path = "/etc/rpm/packages.wants/k8s"
   contents {
-    source = "data:,"
-  }
-}
-
-data "ignition_file" "wanted_package_kubelet" {
-  path = "/etc/rpm/packages.wants/kubelet"
-  contents {
-    source = "data:,"
-  }
-}
-
-data "ignition_file" "wanted_package_kubeadm" {
-  path = "/etc/rpm/packages.wants/kubeadm"
-  contents {
-    source = "data:,"
-  }
-}
-
-data "ignition_file" "wanted_package_kubectl" {
-  path = "/etc/rpm/packages.wants/kubectl"
-  contents {
-    source = "data:,"
+    source = "data:text/plain;charset=utf-8;base64,${base64encode(
+      join("\n", [
+        "cri-o",
+        "kubelet",
+        "kubeadm",
+        "kubectl",
+      ])
+    )}"
   }
 }

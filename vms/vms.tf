@@ -14,6 +14,7 @@ module "vms" {
   }
   ssh            = var.ssh
   k8s            = var.k8s
+  fcos_version   = module.fcos.version
   fcos_volume_id = module.fcos.volume_id
   pool_name      = libvirt_pool.main.name
   network_name   = libvirt_network.main.name
@@ -22,6 +23,8 @@ module "vms" {
   vcpu          = each.value.vcpu
   memory_mb     = each.value.memory_mb
   disk_size_gib = each.value.disk_size_gib
+  nvidia        = each.value.nvidia
+  host_devices  = each.value.host_devices
   mounts        = each.value.mounts
   wireguard     = each.value.wireguard
 }
@@ -35,7 +38,7 @@ resource "kubernetes_labels" "node" {
   metadata {
     name = each.key
   }
-  labels = {
+  labels = merge(each.value.labels, {
     "net/vpn"                = each.value.wireguard != null
     "net/vpn_country"        = each.value.wireguard != null ? each.value.wireguard.vpn_country : null,
     "net/vpn_country_region" = each.value.wireguard != null ? each.value.wireguard.vpn_city : null,
@@ -43,6 +46,6 @@ resource "kubernetes_labels" "node" {
     "net/vpn_private"        = each.value.wireguard != null ? each.value.wireguard.vpn_private : null,
     "net/vpn_tor"            = each.value.wireguard != null ? each.value.wireguard.vpn_tor : null,
     "net/vpn_streaming"      = each.value.wireguard != null ? each.value.wireguard.vpn_streaming : null,
-  }
+  })
 }
 

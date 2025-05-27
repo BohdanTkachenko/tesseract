@@ -4,10 +4,34 @@ locals {
 }
 
 inputs = {
-  seedbox = {
+  gpu = {
+    labels = {
+      "device/gpu" = "true"
+    }
     vcpu          = 2
     memory_mb     = 8192 # 8 GiB
     disk_size_gib = 32
+    nvidia        = true
+    host_devices = [{
+      // GPU
+      source_bus   = "0x01"
+      source_slot  = "0x00"
+      address_bus  = "0x00"
+      address_slot = "0x0a"
+    }]
+    mounts = [
+      local.storage_classes.media_slow.path,
+    ]
+    wireguard = null
+  }
+
+  seedbox = {
+    labels        = {}
+    vcpu          = 2
+    memory_mb     = 8192 # 8 GiB
+    disk_size_gib = 32
+    nvidia        = false
+    host_devices  = []
     mounts = [
       local.storage_classes.media_fast.path,
       local.storage_classes.media_slow.path,

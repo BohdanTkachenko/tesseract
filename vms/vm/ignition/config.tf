@@ -6,6 +6,16 @@ module "base" {
   hostname = var.hostname
 }
 
+module "nvidia" {
+  depends_on = [module.base]
+  source     = "./nvidia"
+  count      = var.nvidia == null ? 0 : 1
+  providers = {
+    ignition = ignition
+  }
+  fcos_version = var.fcos_version
+}
+
 module "mounts" {
   depends_on = [module.base]
   source     = "./mounts"
@@ -39,6 +49,7 @@ locals {
   modules = [
     for m in [
       module.base,
+      var.nvidia == null ? null : module.nvidia[0],
       module.mounts,
       var.wireguard == null ? null : module.wireguard[0],
       var.k8s == null ? null : module.k8s_install[0],
@@ -71,7 +82,7 @@ locals {
 }
 
 data "ignition_config" "merged" {
-  depends_on = [module.base, module.mounts, module.wireguard, module.k8s_install, module.k8s_join]
+  depends_on = [module.base, module.nvidia, module.mounts, module.wireguard, module.k8s_install, module.k8s_join]
   dynamic "merge" {
     for_each = [for m in local.modules_with_join : m.config]
     content {

@@ -31,7 +31,9 @@ resource "libvirt_domain" "domain" {
   }
 
   xml {
-    xslt = file("${path.module}/libvirt-virtiofs.xsl")
+    xslt = templatefile("${path.module}/libvirt.tpl.xsl", {
+      host_devices = var.host_devices
+    })
   }
 
   dynamic "filesystem" {
