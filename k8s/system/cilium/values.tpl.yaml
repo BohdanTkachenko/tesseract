@@ -1,6 +1,5 @@
 operator:
   replicas: 1
-devices: ${network_interface}
 kubeProxyReplacement: true
 k8sServiceHost: ${host_ip}
 k8sServicePort: 6443
