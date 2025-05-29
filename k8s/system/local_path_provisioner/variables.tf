@@ -2,6 +2,10 @@ variable "kube_config_path" {
   type = string
 }
 
+variable "main_node_name" {
+  type = string
+}
+
 variable "namespace" {
   type = string
 }
@@ -24,8 +28,7 @@ variable "provisioner_name" {
 
 variable "storage_classes" {
   type = map(object({
-    id    = string
-    path  = string
-    nodes = list(string)
+    id   = string
+    path = string
   }))
 }

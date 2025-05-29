@@ -20,6 +20,7 @@ inputs = {
       address_slot = "0x0a"
     }]
     mounts = [
+      local.storage_classes.media_fast.path,
       local.storage_classes.media_slow.path,
     ]
     wireguard = null

@@ -66,16 +66,7 @@ inputs = {
 
     local_dns_ipv4 = "10.42.0.53"
 
-    storage_classes = {
-      for key, value in local.storage_classes : key => {
-        id   = value.id
-        path = value.path
-        nodes = concat(["tesseract.sh"], [
-          for name, node in local.vms : name
-          if contains(node.mounts, value.path)
-        ])
-      }
-    }
+    storage_classes = local.storage_classes
   }
 
   vm_base_fcos_image_remote = {

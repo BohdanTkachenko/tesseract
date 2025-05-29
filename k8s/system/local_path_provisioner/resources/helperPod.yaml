@@ -4,6 +4,7 @@ metadata:
   name: helper-pod
   namespace: kube-local-path-storage
 spec:
+  nodeName: ${node_name}
   priorityClassName: system-node-critical
   tolerations:
     - key: node.kubernetes.io/disk-pressure

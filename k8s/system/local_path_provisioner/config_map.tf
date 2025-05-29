@@ -7,21 +7,15 @@ resource "kubernetes_config_map" "local_path_config" {
   data = {
     "config.json" = jsonencode({
       storageClassConfigs = {
-        for name, storage_class in var.storage_classes : storage_class.id => {
-          nodePathMap = concat([
-            {
-              node  = "DEFAULT_PATH_FOR_NON_LISTED_NODES",
-              paths = []
-            }],
-            [for node in storage_class.nodes : {
-              node  = node
-              paths = [storage_class.path]
-          }])
+        for key, value in var.storage_classes : value.id => {
+          sharedFileSystemPath = value.path
         }
       }
     })
-    "helperPod.yaml" = file("${path.module}/resources/helperPod.yaml")
-    "setup"          = file("${path.module}/resources/setup")
-    "teardown"       = file("${path.module}/resources/teardown")
+    "helperPod.yaml" = templatefile("${path.module}/resources/helperPod.yaml", {
+      node_name = var.main_node_name
+    })
+    "setup"    = file("${path.module}/resources/setup")
+    "teardown" = file("${path.module}/resources/teardown")
   }
 }
