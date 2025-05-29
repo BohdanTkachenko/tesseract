@@ -6,23 +6,24 @@ variable "namespace" {
   type = string
 }
 
-variable "gateway_namespace" {
-  type = string
+variable "plex" {
+  type = object({
+    name   = string
+    labels = map(string)
+    image  = string
+    domain = string
+    ip     = string
+  })
 }
 
-variable "gateway_name" {
-  type = string
+variable "gateway" {
+  type = object({
+    name      = string
+    namespace = string
+  })
 }
 
 variable "timezone" {
-  type = string
-}
-
-variable "plex_domain" {
-  type = string
-}
-
-variable "plex_ip" {
   type = string
 }
 

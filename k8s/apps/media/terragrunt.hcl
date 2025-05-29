@@ -33,14 +33,33 @@ dependency "local_path_provisioner" {
   }
 }
 
+locals {
+  plex = {
+    name    = "plex"
+    version = "latest"
+  }
+}
+
 inputs = {
-  kube_config_path               = dependency.metal.outputs.kube_config_path
-  gateway_namespace              = dependency.cilium.outputs.gateway_namespace
-  gateway_name                   = dependency.cilium.outputs.gateway_name
-  namespace                      = "media"
+  kube_config_path = dependency.metal.outputs.kube_config_path
+  namespace        = "media"
+  gateway = {
+    name      = dependency.cilium.outputs.gateway_name
+    namespace = dependency.cilium.outputs.gateway_namespace
+  }
+  plex = {
+    name   = local.plex.name
+    image  = "lscr.io/linuxserver/plex:${local.plex.version}"
+    domain = "plex.${dependency.coredns.outputs.domains.tesseract_sh}"
+    ip     = "10.42.0.32"
+    labels = {
+      "app.kubernetes.io/name"       = local.plex.name
+      "app.kubernetes.io/instance"   = local.plex.name
+      "app.kubernetes.io/managed-by" = "Terraform"
+      "app.kubernetes.io/version"    = local.plex.version
+    }
+  }
   timezone                       = "America/New_York"
-  plex_domain                    = "plex.${dependency.coredns.outputs.domains.tesseract_sh}"
-  plex_ip                        = "10.42.0.32"
   plex_config_storage_class_name = dependency.local_path_provisioner.outputs.storage_classes.media_fast.id
   plex_config_quota              = "20Gi"
   movies_storage_class_name      = dependency.local_path_provisioner.outputs.storage_classes.media_slow.id

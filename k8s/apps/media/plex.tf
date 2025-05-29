@@ -1,5 +1,4 @@
 locals {
-  name = "plex"
   ports = {
     plex = {
       protocol       = "TCP"
@@ -52,30 +51,40 @@ locals {
 resource "kubernetes_deployment" "plex" {
   metadata {
     namespace = var.namespace
-    name      = local.name
-    labels = {
-      "app.kubernetes.io/name" = local.name
-    }
+    name      = var.plex.name
+    labels    = var.plex.labels
   }
 
   spec {
     selector {
       match_labels = {
-        "app.kubernetes.io/name" = local.name
+        "app.kubernetes.io/name"     = var.plex.labels["app.kubernetes.io/name"]
+        "app.kubernetes.io/instance" = var.plex.labels["app.kubernetes.io/instance"]
       }
     }
 
     template {
       metadata {
-        labels = {
-          "app.kubernetes.io/name" = local.name
-        }
+        labels = var.plex.labels
       }
 
       spec {
+        affinity {
+          node_affinity {
+            required_during_scheduling_ignored_during_execution {
+              node_selector_term {
+                match_expressions {
+                  operator = "Exists"
+                  key      = "device/gpu"
+                }
+              }
+            }
+          }
+        }
+
         container {
-          name              = local.name
-          image             = "lscr.io/linuxserver/plex:latest"
+          name              = var.plex.name
+          image             = var.plex.image
           image_pull_policy = "IfNotPresent"
 
           env {
@@ -85,7 +94,7 @@ resource "kubernetes_deployment" "plex" {
 
           env {
             name  = "ADVERTISE_IP"
-            value = "https://${var.plex_domain}"
+            value = "https://${var.plex.domain}"
           }
 
           env {
@@ -122,11 +131,11 @@ resource "kubernetes_deployment" "plex" {
 
           resources {
             limits = {
-              cpu    = "8"
+              cpu    = "2"
               memory = "16Gi"
             }
             requests = {
-              cpu    = "2"
+              cpu    = "1"
               memory = "4Gi"
             }
           }
@@ -137,12 +146,19 @@ resource "kubernetes_deployment" "plex" {
             read_only  = true
           }
 
-          dynamic "volume_mount" {
-            for_each = local.volumes
-            content {
-              name       = volume_mount.key
-              mount_path = volume_mount.value.mount_path
-            }
+          volume_mount {
+            name       = "plex-config"
+            mount_path = "/config"
+          }
+
+          volume_mount {
+            name       = "movies"
+            mount_path = "/movies"
+          }
+
+          volume_mount {
+            name       = "tvshows"
+            mount_path = "/tvshows"
           }
         }
 
@@ -154,13 +170,24 @@ resource "kubernetes_deployment" "plex" {
           }
         }
 
-        dynamic "volume" {
-          for_each = local.volumes
-          content {
-            name = volume.key
-            persistent_volume_claim {
-              claim_name = volume.key
-            }
+        volume {
+          name = "plex-config"
+          persistent_volume_claim {
+            claim_name = "plex-config"
+          }
+        }
+
+        volume {
+          name = "movies"
+          persistent_volume_claim {
+            claim_name = "movies"
+          }
+        }
+
+        volume {
+          name = "tvshows"
+          persistent_volume_claim {
+            claim_name = "tvshows"
           }
         }
       }
@@ -171,19 +198,18 @@ resource "kubernetes_deployment" "plex" {
 resource "kubernetes_service" "plex" {
   metadata {
     namespace = var.namespace
-    name      = local.name
-    labels = {
-      "app.kubernetes.io/name" = local.name
-    }
+    name      = var.plex.name
+    labels    = var.plex.labels
   }
 
   spec {
     selector = {
-      "app.kubernetes.io/name" = local.name
+      "app.kubernetes.io/name"     = var.plex.labels["app.kubernetes.io/name"]
+      "app.kubernetes.io/instance" = var.plex.labels["app.kubernetes.io/instance"]
     }
 
     type             = "LoadBalancer"
-    load_balancer_ip = var.plex_ip
+    load_balancer_ip = var.plex.ip
 
     dynamic "port" {
       for_each = local.ports
