@@ -1,58 +1,20 @@
-resource "kubernetes_persistent_volume_claim" "plex_config" {
-  metadata {
-    name      = "plex-config"
-    namespace = var.namespace
-    labels    = var.plex.labels
-    annotations = {
-      volume_type = "local"
-    }
-  }
-  spec {
-    storage_class_name = var.plex_config_storage_class_name
-    access_modes       = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = var.plex_config_quota
-      }
-    }
-  }
-}
+resource "kubernetes_persistent_volume_claim" "pvc" {
+  for_each = var.volumes
 
-resource "kubernetes_persistent_volume_claim" "movies" {
   metadata {
-    name      = "movies"
+    name      = each.value.name
     namespace = var.namespace
-    labels    = var.plex.labels
+    labels    = each.value.labels
     annotations = {
       volume_type = "local"
     }
   }
   spec {
-    storage_class_name = var.movies_storage_class_name
-    access_modes       = ["ReadWriteMany"]
+    storage_class_name = each.value.storage_class
+    access_modes       = each.value.access_modes
     resources {
       requests = {
-        storage = var.movies_quota
-      }
-    }
-  }
-}
-
-resource "kubernetes_persistent_volume_claim" "tvshows" {
-  metadata {
-    name      = "tvshows"
-    namespace = var.namespace
-    labels    = var.plex.labels
-    annotations = {
-      volume_type = "local"
-    }
-  }
-  spec {
-    storage_class_name = var.tvshows_storage_class_name
-    access_modes       = ["ReadWriteMany"]
-    resources {
-      requests = {
-        storage = var.tvshows_quota
+        storage = each.value.quota
       }
     }
   }

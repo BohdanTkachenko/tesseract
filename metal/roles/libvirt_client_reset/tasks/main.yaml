@@ -1,0 +1,10 @@
+---
+
+- name: Remove libvirt client certificate and key files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ workstation.libvirt.cacert_path }}"
+    - "{{ workstation.libvirt.clientcert_path }}"
+    - "{{ workstation.libvirt.clientkey_path }}"

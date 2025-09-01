@@ -1,0 +1,6 @@
+---
+dependencies:
+  - role: ostree_packages
+    vars:
+      ostree_packages_list: "{{ control_plane.pkgs.libvirt }}"
+  - role: internal_ca

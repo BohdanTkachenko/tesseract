@@ -1,0 +1,154 @@
+---
+
+- name: Fetch the CA certificate from the server
+  delegate_to: tesseract
+  become: true
+  ansible.builtin.fetch:
+    src: "{{ control_plane.k8s.ca_path }}"
+    dest: "{{ workstation.k8s.ca_path }}"
+    flat: true
+
+- name: Generate a new private key
+  community.crypto.openssl_privatekey:
+    size: 2048
+    type: RSA
+    path: "{{ workstation.k8s.key_path }}"
+
+- name: Check if any of the required certificate files exist
+  ansible.builtin.stat:
+    path: "{{ workstation.k8s.crt_path }}"
+  register: k8s_client_crt_stat
+
+- name: Generate, apply, approve and retrieve the client certificate
+  when: not k8s_client_crt_stat.stat.exists
+  block:
+
+    - name: Generate a CSR from the key
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ workstation.k8s.key_path }}"
+        common_name: "{{ workstation.username }}"
+        organization_name: "admin"
+      register: k8s_client_csr_result
+
+    - name: Apply, approve, and retrieve the certificate
+      delegate_to: tesseract
+      become: true
+      environment:
+        KUBECONFIG: "{{ control_plane.k8s.kubeconfig_path }}"
+      block:
+
+        - name: Apply CertificateSigningRequest
+          vars:
+            manifest:
+              apiVersion: certificates.k8s.io/v1
+              kind: CertificateSigningRequest
+              metadata:
+                name: "{{ workstation.username }}-csr"
+              spec:
+                request: "{{ k8s_client_csr_result.csr | b64encode }}"
+                signerName: kubernetes.io/kube-apiserver-client
+                usages:
+                  - client auth
+          ansible.builtin.shell: >
+            set -o pipefail && \
+            echo '{{ manifest | to_nice_yaml }}' \
+            | kubectl \
+              apply -f -
+          register: k8s_client_csr_apply
+          changed_when: "'created' in k8s_client_csr_apply.stdout or 'configured' in k8s_client_csr_apply.stdout"
+
+        - name: Approve CertificateSigningRequest
+          ansible.builtin.command: >
+            kubectl \
+              certificate approve '{{ workstation.username }}-csr'
+          register: k8s_client_csr_approve
+          changed_when: "'approved' in k8s_client_csr_approve.stdout"
+
+        - name: Get certificate
+          ansible.builtin.command: >
+            kubectl \
+              get csr '{{ workstation.username }}-csr' \
+              -o jsonpath='{.status.certificate}'
+          register: k8s_client_certificate
+          changed_when: false
+
+    - name: Write certificate to file
+      ansible.builtin.copy:
+        content: "{{ k8s_client_certificate.stdout | b64decode }}"
+        dest: "{{ workstation.k8s.crt_path }}"
+        mode: '0600'
+
+- name: Apply ClusterRoleBinding
+  delegate_to: tesseract
+  become: true
+  environment:
+    KUBECONFIG: "{{ control_plane.k8s.kubeconfig_path }}"
+  vars:
+    manifest:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: "{{ workstation.username }}-cluster-admin"
+      roleRef:
+        kind: ClusterRole
+        name: cluster-admin
+        apiGroup: rbac.authorization.k8s.io
+      subjects:
+        - kind: User
+          name: "{{ workstation.username }}"
+          apiGroup: rbac.authorization.k8s.io
+  ansible.builtin.shell: >
+    set -o pipefail && \
+    echo '{{ manifest | to_nice_yaml }}' \
+    | kubectl \
+      apply -f -
+  register: k8s_client_kubectl_apply
+  changed_when: "'created' in k8s_client_kubectl_apply.stdout or 'configured' in k8s_client_kubectl_apply.stdout"
+
+- name: Get server address
+  delegate_to: tesseract
+  become: true
+  environment:
+    KUBECONFIG: "{{ control_plane.k8s.kubeconfig_path }}"
+  ansible.builtin.command: >
+    kubectl
+      config view
+      --minify
+      --output jsonpath="{.clusters[*].cluster.server}"
+  register: k8s_client_server_address
+  changed_when: false
+
+- name: Set kube cluster
+  ansible.builtin.command: >
+    kubectl config
+      set-cluster '{{ control_plane.name }}'
+      --server='{{ k8s_client_server_address.stdout }}'
+      --certificate-authority='{{ workstation.k8s.ca_path }}'
+  register: k8s_client_set_cluster_result
+  changed_when: true
+
+- name: Set kube credentials
+  ansible.builtin.command: >
+    kubectl config
+      set-credentials '{{ workstation.username }}'
+      --client-certificate='{{ workstation.k8s.crt_path }}'
+      --client-key='{{ workstation.k8s.key_path }}'
+  changed_when: true
+
+- name: Set kube context
+  ansible.builtin.command: >
+    kubectl config
+      set-context '{{ workstation.username }}@{{ control_plane.name }}'
+      --cluster='{{ control_plane.name }}'
+      --user='{{ workstation.username }}'
+  changed_when: true
+
+- name: Use kube context
+  ansible.builtin.command: >
+    kubectl config
+      use-context '{{ workstation.username }}@{{ control_plane.name }}'
+  changed_when: true
+
+- name: Test that kubectl is working
+  ansible.builtin.command: kubectl version
+  changed_when: false

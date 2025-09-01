@@ -1,0 +1,17 @@
+---
+
+- name: Revert libvirtd.conf TLS changes
+  ansible.builtin.lineinfile:
+    path: /etc/libvirt/libvirtd.conf
+    regexp: "# Added by Ansible"
+    state: absent
+
+- name: Remove libvirt server certificate
+  ansible.builtin.file:
+    path: "{{ control_plane.libvirt.server_cert_path }}"
+    state: absent
+
+- name: Remove libvirt server private key
+  ansible.builtin.file:
+    path: "{{ control_plane.libvirt.server_key_path }}"
+    state: absent

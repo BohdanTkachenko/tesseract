@@ -1,0 +1,16 @@
+{
+    "telemetry": {
+        "enabled": false
+    },
+    "usageStatisticsEnabled": false,
+    "autoAccept": true,
+    "contextFileName": [
+        "GEMINI.md",
+        "KNOWN_ISSUES.md"
+    ],
+    "summarizeToolOutput": {
+        "run_shell_command": {
+            "tokenBudget": 2000
+        }
+    }
+}

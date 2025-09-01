@@ -1,0 +1,68 @@
+---
+control_plane:
+  name: tesseract
+  address: 10.42.0.1
+  nameserver: 10.0.0.1
+
+  pkgs:
+    k8s:
+      - cri-o1.32
+      - ipvsadm
+      - kubernetes1.32
+      - python3-kubernetes
+    libvirt:
+      # - libvirt-daemon-config-network
+      - libvirt-daemon-kvm
+      # - libvirt-nss
+      - python3-cryptography
+      # - qemu-kvm
+      # - virt-install
+      # - virt-manager
+      # - virt-top
+      # - virt-viewer
+    other:
+      - fish
+      - micro
+      - cockpit
+      - cockpit-files
+      - cockpit-machines
+      - cockpit-networkmanager
+      - cockpit-podman
+      - cockpit-selinux
+      - cockpit-storaged
+      # - python3-libguestfs
+      - samba
+
+  k8s:
+    kubelet_resolv_conf_path: /etc/resolv.kubelet.conf
+    ca_path: /etc/kubernetes/pki/ca.crt
+    kubeconfig_path: /etc/kubernetes/admin.conf
+    cni_net_dir: /etc/cni/net.d
+
+  ca:
+    key_path: /etc/pki/CA/cakey.pem
+    cert_path: /etc/pki/CA/cacert.pem
+    cert_country: "US"
+    cert_org: "Tesseract"
+    cert_cn: "Tesseract CA"
+
+  libvirt:
+    server_key_path: /etc/pki/libvirt/private/serverkey.pem
+    server_cert_path: /etc/pki/libvirt/servercert.pem
+    tls_port: 16514
+
+workstation:
+  name: "{{ lookup('env', 'HOSTNAME') }}"
+  username: "{{ lookup('env', 'USER') }}"
+
+  k8s:
+    ca_path: "{{ lookup('env', 'HOME') }}/.kube/ca.crt"
+    key_path: "{{ lookup('env', 'HOME') }}/.kube/kube.key"
+    crt_path: "{{ lookup('env', 'HOME') }}/.kube/kube.crt"
+    kubeconfig_path: "{{ lookup('env', 'HOME') }}/.kube/config"
+
+  libvirt:
+    cacert_path: "{{ lookup('env', 'HOME') }}/.pki/libvirt/cacert.pem"
+    clientkey_path: "{{ lookup('env', 'HOME') }}/.pki/libvirt/clientkey.pem"
+    clientcert_path: "{{ lookup('env', 'HOME') }}/.pki/libvirt/clientcert.pem"
+

@@ -1,0 +1,8 @@
+---
+- name: Remove CA files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ control_plane.ca.key_path }}"
+    - "{{ control_plane.ca.cert_path }}"

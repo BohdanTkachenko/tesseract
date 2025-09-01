@@ -1,8 +1,8 @@
 # Project config
 .vscode/**/*
 
-# Generated scripts
-scripts/create_service_account_with_pub_key.sh
+### Ansible ###
+**/.ansible/*
 
 ### Terraform ###
 
@@ -23,7 +23,7 @@ crash.*.log
 # to change depending on the environment.
 *.tfvars
 *.tfvars.json
-secrets.yaml
+secrets-unencrypted.yaml
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in

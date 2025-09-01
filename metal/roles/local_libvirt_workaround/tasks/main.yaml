@@ -1,0 +1,25 @@
+---
+- name: Clone terraform-provider-libvirt repository
+  ansible.builtin.git:
+    repo: 'https://github.com/dmacvicar/terraform-provider-libvirt.git'
+    dest: "{{ role_path }}/repo"
+    version: sshcmd
+    force: true
+
+- name: Build terraform-provider-libvirt
+  ansible.builtin.command:
+    cmd: make
+    chdir: "{{ role_path }}/repo"
+    creates: "{{ role_path }}/repo/bin/terraform-provider-libvirt"
+
+- name: Create .terraformrc file
+  ansible.builtin.copy:
+    content: |
+      provider_installation {
+        dev_overrides {
+          "dmacvicar/libvirt" = "{{ role_path }}/repo"
+        }
+        direct {}
+      }
+    dest: "{{ role_path }}/.terraformrc"
+    mode: '0644'

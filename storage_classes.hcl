@@ -1,18 +1,18 @@
 locals {
-  fast_path = "/var/lib/volumes/"
-  slow_path = "/var/mnt/hdd/volumes/"
+  fast = "/var/lib/volumes"
+  slow = "/var/mnt/hdd/volumes"
 
   storage_classes = {
-    media_fast = fast_path.local + "media"
-    media_slow = slow_path.local + "media"
-    stash_fast = fast_path.local + "stash"
-    stash_slow = slow_path.local + "stash"
+    media_fast = "${local.fast}/media"
+    media_slow = "${local.slow}/media"
+    stash_fast = "${local.fast}/stash"
+    stash_slow = "${local.slow}/media"
   }
 }
 
 inputs = {
-  for key, path in storage_classes : key => {
-    id   = replace(name, "_", "-") + "-local"
+  for key, path in local.storage_classes : key => {
+    id   = "${replace(key, "_", "-")}-local"
     path = path
   }
 }

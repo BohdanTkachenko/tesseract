@@ -2,10 +2,10 @@ module "ignition" {
   source = "./ignition"
   providers = {
     ignition = ignition
-    ssh      = ssh
+    kubernetes = kubernetes
+    shell = shell
   }
   hostname     = var.hostname
-  ssh          = var.ssh
   fcos_version = var.fcos_version
   nvidia       = var.nvidia
   wireguard    = var.wireguard

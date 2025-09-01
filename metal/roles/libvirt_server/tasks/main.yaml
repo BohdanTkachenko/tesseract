@@ -1,0 +1,66 @@
+---
+- name: Generate CA and Server Certificates
+  tags: [certs]
+  block:
+
+    - name: Create directory for server certificate
+      ansible.builtin.file:
+        path: "{{ control_plane.libvirt.server_key_path | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Generate server private key
+      community.crypto.openssl_privatekey:
+        path: "{{ control_plane.libvirt.server_key_path }}"
+        size: 2048
+        mode: "0600"
+
+    - name: Generate server CSR
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ control_plane.libvirt.server_key_path }}"
+        subject:
+          C: "{{ control_plane.ca.cert_country }}"
+          O: "{{ control_plane.ca.cert_org }}"
+          CN: "{{ ansible_fqdn }}"
+        subject_alt_name:
+          - "IP:{{ control_plane.address }}"
+          - "DNS:{{ ansible_fqdn }}"
+          - "DNS:{{ ansible_hostname }}"
+        key_usage: [digitalSignature, keyEncipherment]
+        extended_key_usage: [serverAuth]
+      register: libvirt_server_server_csr
+
+    - name: Generate server certificate signed by CA
+      community.crypto.x509_certificate:
+        path: "{{ control_plane.libvirt.server_cert_path }}"
+        csr_content: "{{ libvirt_server_server_csr.csr }}"
+        provider: ownca
+        ownca_path: "{{ control_plane.ca.cert_path }}"
+        ownca_privatekey_path: "{{ control_plane.ca.key_path }}"
+      notify: Restart libvirtd
+
+- name: Configure libvirtd.conf for TLS
+  ansible.builtin.lineinfile:
+    path: /etc/libvirt/libvirtd.conf
+    regexp: "^{{ item.key }}\\s*="
+    line: "{{ item.key }} = {{ item.value }} # Added by Ansible"
+    state: present
+  loop:
+    - { key: "listen_tls", value: "1" }
+    - { key: "listen_tcp", value: "0" }
+    - { key: "auth_tls", value: '"none"' }
+    - { key: "tls_port", value: '"{{ control_plane.libvirt.tls_port }}"' }
+  notify: Restart libvirtd
+
+- name: Enable and start libvirtd TLS socket
+  ansible.builtin.systemd:
+    name: libvirtd-tls.socket
+    state: started
+    enabled: true
+
+- name: Test if libvirt is working
+  ansible.builtin.command:
+    cmd: virsh version
+  changed_when: false

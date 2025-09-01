@@ -2,23 +2,6 @@ variable "hostname" {
   type = string
 }
 
-variable "ssh" {
-  sensitive = true
-  type = object({
-    agent               = bool
-    host                = string
-    port                = number
-    user                = string
-    password            = string
-    private_key         = string
-    bastion_host        = string
-    bastion_port        = number
-    bastion_user        = string
-    bastion_password    = string
-    bastion_private_key = string
-  })
-}
-
 variable "fcos_version" {
   type = number
 }
@@ -30,8 +13,7 @@ variable "nvidia" {
 variable "k8s" {
   type = object({
     version = string
-    server  = string
-    ca_hash = string
+    ca_path = string
   })
   nullable = true
 }

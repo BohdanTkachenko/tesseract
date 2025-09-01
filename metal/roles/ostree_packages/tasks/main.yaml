@@ -1,0 +1,41 @@
+---
+# This task list expects a variable named 'ostree_packages_list' to be defined.
+- name: Manage rpm-ostree packages
+  tags: [ostree]
+  block:
+    - name: Get current rpm-ostree status
+      ansible.builtin.command: rpm-ostree status --json
+      register: ostree_packages_status
+      changed_when: false
+
+    - name: Set fact for currently layered packages
+      ansible.builtin.set_fact:
+        ostree_packages_layered: >-
+          {{ ((((ostree_packages_status.stdout | from_json).deployments | selectattr('staged', 'true')) +
+              ((ostree_packages_status.stdout | from_json).deployments | selectattr('booted', 'true')))
+              | first | default({})
+            )['requested-packages'] | default([]) }}
+
+    - name: Determine which ostree packages to change
+      ansible.builtin.set_fact:
+        ostree_packages_to_change: >-
+          {{ (ostree_packages_state == 'present') |
+             ternary(ostree_packages_list | map('trim') | difference(ostree_packages_layered | map('trim')),
+                     ostree_packages_list | map('trim') | intersect(ostree_packages_layered | map('trim'))) }}
+
+    - name: Print the list of packages to be changed
+      ansible.builtin.debug:
+        msg: "Changing package state to {{ ostree_packages_state }} for packages: {{ ostree_packages_to_change }}"
+      when: ostree_packages_to_change | length > 0
+
+    - name: "Changing ostree packages state to {{ ostree_packages_state }}"
+      community.general.rpm_ostree_pkg:
+        pkg: "{{ ostree_packages_to_change }}"
+        state: "{{ ostree_packages_state }}"
+      when: ostree_packages_to_change | length > 0
+      register: ostree_packages_result
+
+    - name: Reboot if changes to ostree packages were made
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+      when: ostree_packages_result.needs_reboot | default(false)

@@ -10,9 +10,9 @@ module "vms" {
   providers = {
     libvirt  = libvirt
     ignition = ignition
-    ssh      = ssh
+    kubernetes = kubernetes
+    shell = shell
   }
-  ssh            = var.ssh
   k8s            = var.k8s
   fcos_version   = module.fcos.version
   fcos_volume_id = module.fcos.volume_id

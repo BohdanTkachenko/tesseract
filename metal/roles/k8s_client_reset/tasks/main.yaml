@@ -1,0 +1,62 @@
+---
+
+- name: Delete resources on the control plane
+  delegate_to: tesseract
+  become: true
+  environment:
+    KUBECONFIG: "{{ control_plane.k8s.kubeconfig_path }}"
+  block:
+
+    - name: Check if Kubernetes cluster is initialized
+      ansible.builtin.stat:
+        path: "{{ control_plane.k8s.kubeconfig_path }}"
+      register: k8s_client_reset_kubeconfig_exists
+
+    - name: Delete ClusterRoleBinding
+      when: k8s_client_reset_kubeconfig_exists.stat.exists
+      ansible.builtin.shell: >
+        kubectl delete clusterrolebinding "{{ workstation.username }}-cluster-admin" --ignore-not-found
+      register: k8s_client_reset_delete_clusterrolebinding
+      changed_when: "'deleted' in k8s_client_reset_delete_clusterrolebinding.stdout"
+
+    - name: Delete CertificateSigningRequest
+      when: k8s_client_reset_kubeconfig_exists.stat.exists
+      ansible.builtin.shell: >
+        kubectl delete csr "{{ workstation.username }}-csr" --ignore-not-found
+      register: k8s_client_reset_delete_csr
+      changed_when: "'deleted' in k8s_client_reset_delete_csr.stdout"
+
+- name: Reset local kubectl configuration
+  environment:
+    KUBECONFIG: "{{ workstation.k8s.kubeconfig_path }}"
+  block:
+
+    - name: Unset kube context
+      ansible.builtin.shell: >
+        kubectl config unset contexts.{{ workstation.username }}@{{ control_plane.name }}
+      register: k8s_client_reset_unset_context_result
+      changed_when: "'deleted' in k8s_client_reset_unset_context_result.stdout"
+      ignore_errors: true
+
+    - name: Unset kube credentials
+      ansible.builtin.shell: >
+        kubectl config unset users.{{ workstation.username }}
+      register: k8s_client_reset_unset_creds_result
+      changed_when: "'deleted' in k8s_client_reset_unset_creds_result.stdout"
+      ignore_errors: true
+
+    - name: Unset kube cluster
+      ansible.builtin.shell: >
+        kubectl config unset clusters.{{ control_plane.name }}
+      register: k8s_client_reset_unset_cluster_result
+      changed_when: "'deleted' in k8s_client_reset_unset_cluster_result.stdout"
+      ignore_errors: true
+
+- name: Remove local k8s config files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ workstation.k8s.ca_path }}"
+    - "{{ workstation.k8s.key_path }}"
+    - "{{ workstation.k8s.crt_path }}"

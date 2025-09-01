@@ -6,14 +6,18 @@ variable "namespace" {
   type = string
 }
 
-variable "plex" {
-  type = object({
-    name   = string
-    labels = map(string)
-    image  = string
-    domain = string
-    ip     = string
-  })
+variable "timezone" {
+  type = string
+}
+
+variable "volumes" {
+  type = map(object({
+    name          = string
+    labels        = map(string)
+    storage_class = string
+    access_modes  = list(string)
+    quota         = string
+  }))
 }
 
 variable "gateway" {
@@ -23,30 +27,13 @@ variable "gateway" {
   })
 }
 
-variable "timezone" {
-  type = string
-}
-
-variable "plex_config_storage_class_name" {
-  type = string
-}
-
-variable "plex_config_quota" {
-  type = string
-}
-
-variable "movies_storage_class_name" {
-  type = string
-}
-
-variable "movies_quota" {
-  type = string
-}
-
-variable "tvshows_storage_class_name" {
-  type = string
-}
-
-variable "tvshows_quota" {
-  type = string
+variable "plex" {
+  type = object({
+    name        = string
+    labels      = map(string)
+    node_labels = map(string)
+    image       = string
+    domain      = string
+    ip          = string
+  })
 }

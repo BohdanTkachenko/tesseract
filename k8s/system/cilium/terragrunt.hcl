@@ -1,5 +1,5 @@
-dependency "metal" {
-  config_path = "${get_terragrunt_dir()}/../../../metal"
+include "root" {
+  path = find_in_parent_folders("root.hcl")
 }
 
 dependency "crds" {
@@ -12,7 +12,7 @@ locals {
 }
 
 inputs = {
-  kube_config_path          = dependency.metal.outputs.kube_config_path
+  kube_config_path          = local.config.k8s.local.kubeconfig_path
   namespace                 = "kube-cilium"
   network_interface         = local.config.host.network.interface
   cluster_ipv4_network      = local.config.k8s.network.cluster.ipv4

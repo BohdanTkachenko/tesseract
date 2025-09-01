@@ -4,21 +4,9 @@ locals {
 }
 
 inputs = {
-  ssh = {
-    host = "tesseract.lan"
-    port = 22
-    initial_setup = {
-      username         = "dan"
-      private_key_path = ""
-    }
-    service_account = {
-      username                = "terraform"
-      target_private_key_path = "~/.ssh/terraform_service_account_key"
-    }
-  }
-
   host = {
     hostname = "tesseract.sh"
+    timezone = "America/New_York"
     network = {
       interface    = "enp3s0"
       ipv4_address = "10.42.0.1"
@@ -26,9 +14,13 @@ inputs = {
     }
   }
 
+  libvirt_connection_string = "qemu+tls://10.42.0.1/system"
+
   k8s = {
     version    = "1.32"
-    api_server = "https://tesseract.sh:6443"
+    control_plane_node_name = "tesseract"
+    api_server = "https://10.42.0.1:6443"
+
     remote = {
       kubeconfig_path       = "$HOME/.kube/config"
       admin_kubeconfig_path = "/etc/kubernetes/admin.conf"
@@ -36,6 +28,7 @@ inputs = {
       ca_path               = "/etc/kubernetes/pki/ca.crt"
       resolv_conf_path      = "/etc/resolv.kubelet.conf"
     }
+
     local = {
       ca_path         = "~/.kube/ca.crt"
       key_path        = "~/.kube/kube.key"
@@ -67,6 +60,10 @@ inputs = {
     local_dns_ipv4 = "10.42.0.53"
 
     storage_classes = local.storage_classes
+
+    default_labels = {
+      "app.kubernetes.io/managed-by" = "Terraform"
+    }
   }
 
   vm_base_fcos_image_remote = {

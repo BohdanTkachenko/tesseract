@@ -81,16 +81,10 @@ resource "kubernetes_deployment" "plex" {
             }
           }
         }
-
         container {
           name              = var.plex.name
           image             = var.plex.image
           image_pull_policy = "IfNotPresent"
-
-          env {
-            name  = "VERSION"
-            value = "docker"
-          }
 
           env {
             name  = "ADVERTISE_IP"
@@ -147,17 +141,17 @@ resource "kubernetes_deployment" "plex" {
           }
 
           volume_mount {
-            name       = "plex-config"
+            name       = var.volumes.plex_config.name
             mount_path = "/config"
           }
 
           volume_mount {
-            name       = "movies"
+            name       = var.volumes.movies.name
             mount_path = "/movies"
           }
 
           volume_mount {
-            name       = "tvshows"
+            name       = var.volumes.tvshows.name
             mount_path = "/tvshows"
           }
         }
@@ -171,23 +165,23 @@ resource "kubernetes_deployment" "plex" {
         }
 
         volume {
-          name = "plex-config"
+          name = var.volumes.plex_config.name
           persistent_volume_claim {
-            claim_name = "plex-config"
+            claim_name = var.volumes.plex_config.name
           }
         }
 
         volume {
-          name = "movies"
+          name = var.volumes.movies.name
           persistent_volume_claim {
-            claim_name = "movies"
+            claim_name = var.volumes.movies.name
           }
         }
 
         volume {
-          name = "tvshows"
+          name = var.volumes.tvshows.name
           persistent_volume_claim {
-            claim_name = "tvshows"
+            claim_name = var.volumes.tvshows.name
           }
         }
       }

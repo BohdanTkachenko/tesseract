@@ -1,9 +1,5 @@
-dependency "service_account" {
-  config_path = "${get_terragrunt_dir()}/../service_account"
-}
-
-dependency "metal" {
-  config_path = "${get_terragrunt_dir()}/../metal"
+include "root" {
+  path = find_in_parent_folders("root.hcl")
 }
 
 locals {
@@ -11,14 +7,12 @@ locals {
 }
 
 inputs = {
-  libvirt_ssh_connection_string = dependency.service_account.outputs.libvirt_ssh_connection_string
-  ssh                           = dependency.service_account.outputs.ssh_config
-  fcos                          = local.config.vm_base_fcos_image_remote
+  libvirt_connection_string = local.config.libvirt_connection_string
+  fcos                      = local.config.vm_base_fcos_image_remote
   k8s = {
     version = local.config.k8s.version
-    ca_hash = dependency.metal.outputs.k8s_certificate_authority_hash
-    server  = dependency.metal.outputs.k8s_server
+    ca_path = local.config.k8s.local.ca_path
   }
-  kube_config_path = dependency.metal.outputs.kube_config_path
+  kube_config_path = local.config.k8s.local.kubeconfig_path
   vms              = local.config.vms
 }

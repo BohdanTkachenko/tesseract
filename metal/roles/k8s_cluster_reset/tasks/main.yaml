@@ -1,0 +1,30 @@
+---
+- name: Check if kubeadm exists
+  ansible.builtin.stat:
+    path: "/usr/bin/kubeadm"
+  register: k8s_cluster_reset_kubeadm_stat
+
+- name: Reset the Kubernetes cluster
+  ansible.builtin.command: "kubeadm reset -f"
+  changed_when: true
+  when: k8s_cluster_reset_kubeadm_stat.stat.exists
+
+- name: Check if ipvsadm exists
+  ansible.builtin.stat:
+    path: "/usr/sbin/ipvsadm"
+  register: k8s_cluster_reset_ipvsadm_stat
+
+- name: Clear IPVS
+  ansible.builtin.command: "ipvsadm --clear"
+  changed_when: true
+  when: k8s_cluster_reset_ipvsadm_stat.stat.exists
+
+- name: "Remove K8s resolvConf file"
+  ansible.builtin.file:
+    path: "{{ control_plane.k8s.kubelet_resolv_conf_path }}"
+    state: absent
+
+- name: Remove CNI network files
+  ansible.builtin.file:
+    path: "{{ control_plane.k8s.cni_net_dir }}"
+    state: absent

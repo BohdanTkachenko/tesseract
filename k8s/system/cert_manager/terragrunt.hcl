@@ -1,5 +1,5 @@
-dependency "metal" {
-  config_path = "${get_terragrunt_dir()}/../../../metal"
+include "root" {
+  path = find_in_parent_folders("root.hcl")
 }
 
 dependency "cilium" {
@@ -16,7 +16,7 @@ locals {
 }
 
 inputs = {
-  kube_config_path     = dependency.metal.outputs.kube_config_path
+  kube_config_path     = local.config.k8s.local.kubeconfig_path
   namespace            = "kube-cert-manager"
   letsencrypt_email    = local.config.k8s.cert_manager.admin_email
   cloudflare_api_token = local.secret_vars.cert_manager_cloudflare_api_token

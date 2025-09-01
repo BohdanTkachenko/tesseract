@@ -1,0 +1,22 @@
+---
+
+- name: Reset workstation
+  hosts: workstation
+  roles:
+    - k8s_client_reset
+    - libvirt_client_reset
+
+- name: Reset control plane
+  hosts: control_plane
+  become: true
+  roles:
+    - k8s_cluster_reset
+    - role: ostree_packages
+      vars:
+        ostree_packages_list: "{{
+          control_plane.pkgs.k8s +
+          control_plane.pkgs.libvirt +
+          control_plane.pkgs.other +
+          [] }}"
+        ostree_packages_state: absent
+    - libvirt_server_reset

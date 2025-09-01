@@ -1,0 +1,103 @@
+---
+
+- name: Check if Kubernetes cluster is already initialized
+  ansible.builtin.stat:
+    path: "{{ control_plane.k8s.kubeconfig_path }}"
+  register: k8s_cluster_kubeconfig_exists
+
+- name: Initialize the Kubernetes cluster
+  when: not k8s_cluster_kubeconfig_exists.stat.exists
+  block:
+
+    - name: Create temporary file for kubeadm config
+      ansible.builtin.tempfile:
+        state: file
+        suffix: kubeadm-config.yaml
+      register: k8s_cluster_kubeadm_config_file
+
+    - name: Write kubeadm config to temporary file
+      ansible.builtin.copy:
+        dest: "{{ k8s_cluster_kubeadm_config_file.path }}"
+        mode: "0644"
+        content: |
+          ---
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: ClusterConfiguration
+          controllerManager:
+            extraArgs:
+              flex-volume-plugin-dir: /var/lib/kubelet/volume-plugins
+          networking:
+            podSubnet: 10.244.0.0/16
+          ---
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: InitConfiguration
+          nodeRegistration:
+            criSocket: unix:///var/run/crio/crio.sock
+            taints: []
+          skipPhases:
+            - addon/kube-proxy
+          ---
+          apiVersion: kubelet.config.k8s.io/v1beta1
+          kind: KubeletConfiguration
+          volumePluginDir: /var/lib/kubelet/volume-plugins
+
+    - name: Initialize the Kubernetes cluster
+      ansible.builtin.command:
+        cmd: >
+          kubeadm init
+            --config {{ k8s_cluster_kubeadm_config_file.path }}
+            --node-name={{ control_plane.name }}
+        creates: "{{ control_plane.k8s.kubeconfig_path }}"
+
+    - name: Clean up kubeadm config file
+      ansible.builtin.file:
+        path: "{{ k8s_cluster_kubeadm_config_file.path }}"
+        state: absent
+      when: k8s_cluster_kubeadm_config_file.path is defined
+
+- name: Get kubelet-config from cluster
+  ansible.builtin.command: >
+    kubectl get configmap kubelet-config
+      -n kube-system
+      -o yaml
+  register: k8s_cluster_config_map_yaml
+  changed_when: false
+
+- name: Create K8s resolvConf file
+  ansible.builtin.copy:
+    content: |
+      nameserver {{ control_plane.nameserver }}
+    dest: "{{ control_plane.k8s.kubelet_resolv_conf_path }}"
+    mode: "0644"
+
+- name: Update resolvConf path in kubelet config
+  ansible.builtin.command:
+    cmd: >
+      kubectl patch configmap kubelet-config
+        -n kube-system
+        --type='merge'
+        -p '{{ {
+          "data": {
+            "kubelet": kubelet_config
+              | combine({"resolvConf": control_plane.k8s.kubelet_resolv_conf_path})
+              | to_nice_yaml
+            }
+          } | to_nice_yaml
+        }}'
+  vars:
+    kubelet_config: "{{ (k8s_cluster_config_map_yaml.stdout | from_yaml).data.kubelet | from_yaml }}"
+  when: kubelet_config.resolvConf != control_plane.k8s.kubelet_resolv_conf_path
+  register: k8s_cluster_config_path_result
+  changed_when: "'(no change)' not in k8s_cluster_config_path_result.stdout"
+
+- name: Wait for all non-CoreDNS pods in kube-system to be ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: kube-system
+    label_selectors:
+      - "k8s-app != kube-dns"
+    wait: true
+    wait_condition:
+      type: Ready
+      status: "True"
+    wait_timeout: 30

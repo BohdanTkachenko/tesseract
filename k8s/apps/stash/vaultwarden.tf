@@ -52,19 +52,19 @@ resource "kubernetes_deployment" "vaultwarden" {
             }
           }
 
-          # readiness_probe {
-          #   http_get {
-          #     path = "/"
-          #     port = "http"
-          #   }
-          # }
+          readiness_probe {
+            http_get {
+              path = "/"
+              port = "http"
+            }
+          }
 
-          # liveness_probe {
-          #   http_get {
-          #     path = "/"
-          #     port = "http"
-          #   }
-          # }
+          liveness_probe {
+            http_get {
+              path = "/"
+              port = "http"
+            }
+          }
 
           resources {
             limits = {

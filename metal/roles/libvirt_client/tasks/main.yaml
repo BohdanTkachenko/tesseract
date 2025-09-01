@@ -1,0 +1,57 @@
+---
+
+- name: Fetch the CA certificate from the server
+  delegate_to: tesseract
+  become: true
+  ansible.builtin.fetch:
+    src: "{{ control_plane.ca.cert_path }}"
+    dest: "{{ workstation.libvirt.cacert_path }}"
+    flat: true
+
+- name: Generate a local private key for the client
+  community.crypto.openssl_privatekey:
+    path: "{{ workstation.libvirt.clientkey_path }}"
+    size: 2048
+    mode: "0600"
+
+- name: Check if local client certificate exists
+  ansible.builtin.stat:
+    path: "{{ workstation.libvirt.clientcert_path }}"
+  register: libvirt_client_cert_exists
+
+- name: Generate and sign a local client certificate if it does not exist
+  when: not libvirt_client_cert_exists.stat.exists
+  block:
+
+    - name: Generate a local CSR for the client in memory
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ workstation.libvirt.clientkey_path }}"
+        subject:
+          C: "{{ control_plane.ca.cert_country }}"
+          O: "{{ control_plane.ca.cert_org }}"
+          CN: "{{ workstation.name }}"
+      register: libvirt_client_csr
+
+    - name: Sign the client CSR using the server's CA
+      delegate_to: tesseract
+      become: true
+      community.crypto.x509_certificate_pipe:
+        csr_content: "{{ libvirt_client_csr.csr }}"
+        provider: ownca
+        ownca_path: "{{ control_plane.ca.cert_path }}"
+        ownca_privatekey_path: "{{ control_plane.ca.key_path }}"
+      register: libvirt_client_signed_cert
+
+    - name: Save the signed client certificate locally
+      ansible.builtin.copy:
+        content: "{{ libvirt_client_signed_cert.certificate }}"
+        dest: "{{ workstation.libvirt.clientcert_path }}"
+        mode: "0644"
+
+- name: Test if local libvirt client is working
+  ansible.builtin.command:
+    cmd: >
+      virsh
+        -c qemu+tls://{{ control_plane.address }}/system
+        version
+  changed_when: false

@@ -1,6 +1,5 @@
 resource "libvirt_domain" "domain" {
   depends_on = [
-    ssh_sensitive_resource.create_host_storage_dir,
     libvirt_volume.root,
     libvirt_ignition.ignition,
   ]

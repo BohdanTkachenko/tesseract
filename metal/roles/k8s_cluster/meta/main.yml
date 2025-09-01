@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: ostree_packages
+    vars:
+      ostree_packages_list: "{{ control_plane.pkgs.k8s }}"

@@ -1,0 +1,39 @@
+---
+- name: Generate CA Certificate
+  tags: [certs]
+  block:
+
+    - name: Create directory for CA
+      ansible.builtin.file:
+        path: "{{ control_plane.ca.key_path | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Generate CA private key
+      community.crypto.openssl_privatekey:
+        path: "{{ control_plane.ca.key_path }}"
+        size: 2048
+        mode: "0600"
+
+    - name: Generate CA CSR
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ control_plane.ca.key_path }}"
+        subject:
+          C: "{{ control_plane.ca.cert_country }}"
+          O: "{{ control_plane.ca.cert_org }}"
+          CN: "{{ control_plane.ca.cert_cn }}"
+        basic_constraints: ["CA:TRUE", "pathlen:0"]
+        basic_constraints_critical: true
+        key_usage: [keyCertSign]
+        key_usage_critical: true
+      register: internal_ca_csr
+
+    - name: Generate self-signed CA certificate
+      community.crypto.x509_certificate:
+        path: "{{ control_plane.ca.cert_path }}"
+        csr_content: "{{ internal_ca_csr.csr }}"
+        privatekey_path: "{{ control_plane.ca.key_path }}"
+        provider: selfsigned
+        mode: "0644"

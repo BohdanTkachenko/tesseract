@@ -63,14 +63,13 @@ module "k8s_join" {
   count      = var.k8s == null ? 0 : 1
   triggers   = [for m in local.modules : m.hash]
   providers = {
-    ssh      = ssh
     ignition = ignition
+    kubernetes = kubernetes
+    shell = shell
   }
 
   hostname = var.hostname
-  server   = var.k8s.server
-  ca_hash  = var.k8s.ca_hash
-  ssh      = var.ssh
+  k8s_ca_path = var.k8s.ca_path
 }
 
 locals {

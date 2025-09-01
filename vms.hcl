@@ -8,8 +8,8 @@ inputs = {
     labels = {
       "device/gpu" = "true"
     }
-    vcpu          = 2
-    memory_mb     = 8192 # 8 GiB
+    vcpu          = 4
+    memory_mb     = 16384 # 16 GiB
     disk_size_gib = 32
     nvidia        = true
     host_devices = [{

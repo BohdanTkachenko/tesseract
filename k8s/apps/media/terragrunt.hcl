@@ -1,5 +1,5 @@
-dependency "metal" {
-  config_path = "${get_terragrunt_dir()}/../../../metal"
+include "root" {
+  path = find_in_parent_folders("root.hcl")
 }
 
 dependency "cilium" {
@@ -34,36 +34,58 @@ dependency "local_path_provisioner" {
 }
 
 locals {
+  config = read_terragrunt_config(find_in_parent_folders("config.hcl")).inputs
   plex = {
     name    = "plex"
+    image   = "plexinc/pms-docker"
     version = "latest"
   }
 }
 
 inputs = {
-  kube_config_path = dependency.metal.outputs.kube_config_path
+  kube_config_path = local.config.k8s.local.kubeconfig_path
   namespace        = "media"
+  timezone         = local.config.host.timezone
+
+  volumes = {
+    plex_config = {
+      name          = "plex-config"
+      labels        = local.config.k8s.default_labels
+      storage_class = dependency.local_path_provisioner.outputs.storage_classes.media_fast.id
+      access_modes  = ["ReadWriteOnce"]
+      quota         = "20Gi"
+    }
+    movies = {
+      name          = "movies"
+      labels        = local.config.k8s.default_labels
+      storage_class = dependency.local_path_provisioner.outputs.storage_classes.media_slow.id
+      access_modes  = ["ReadWriteMany"]
+      quota         = "20Ti"
+    }
+    tvshows = {
+      name          = "tvshows"
+      labels        = local.config.k8s.default_labels
+      storage_class = dependency.local_path_provisioner.outputs.storage_classes.media_slow.id
+      access_modes  = ["ReadWriteMany"]
+      quota         = "20Ti"
+    }
+  }
+
   gateway = {
     name      = dependency.cilium.outputs.gateway_name
     namespace = dependency.cilium.outputs.gateway_namespace
   }
+
   plex = {
-    name   = local.plex.name
-    image  = "lscr.io/linuxserver/plex:${local.plex.version}"
-    domain = "plex.${dependency.coredns.outputs.domains.tesseract_sh}"
-    ip     = "10.42.0.32"
-    labels = {
-      "app.kubernetes.io/name"       = local.plex.name
-      "app.kubernetes.io/instance"   = local.plex.name
-      "app.kubernetes.io/managed-by" = "Terraform"
-      "app.kubernetes.io/version"    = local.plex.version
-    }
+    name = local.plex.name
+    labels = merge(local.config.k8s.default_labels, {
+      "app.kubernetes.io/name"     = local.plex.name
+      "app.kubernetes.io/instance" = local.plex.name
+      "app.kubernetes.io/version"  = local.plex.version
+    })
+    node_labels = local.config.vms.gpu.labels
+    image       = "${local.plex.image}:${local.plex.version}"
+    domain      = "plex.${dependency.coredns.outputs.domains.tesseract_sh}"
+    ip          = "10.42.0.32"
   }
-  timezone                       = "America/New_York"
-  plex_config_storage_class_name = dependency.local_path_provisioner.outputs.storage_classes.media_fast.id
-  plex_config_quota              = "20Gi"
-  movies_storage_class_name      = dependency.local_path_provisioner.outputs.storage_classes.media_slow.id
-  movies_quota                   = "20Ti"
-  tvshows_storage_class_name     = dependency.local_path_provisioner.outputs.storage_classes.media_slow.id
-  tvshows_quota                  = "20Ti"
 }

@@ -1,0 +1,25 @@
+---
+- name: Initialize the control plane
+  hosts: control_plane
+  become: true
+  environment:
+    KUBECONFIG: "{{ control_plane.k8s.kubeconfig_path }}"
+  roles:
+    - role: ostree_packages
+      vars:
+        ostree_packages_list: "{{
+          control_plane.pkgs.k8s +
+          control_plane.pkgs.libvirt +
+          control_plane.pkgs.other +
+          [] }}"
+    - role: libvirt_server
+    - role: k8s_cluster
+
+- name: Configure the current workstation
+  hosts: workstation
+  environment:
+    KUBECONFIG: "{{ workstation.k8s.kubeconfig_path }}"
+  roles:
+    - role: libvirt_client
+    - role: k8s_client
+    - role: local_libvirt_workaround
