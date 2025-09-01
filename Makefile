@@ -10,6 +10,9 @@ install: ansible terragrunt
 ansible:
 	ansible-playbook -i metal/inventory/production --skip-tags="$(ANSIBLE_SKIP_TAGS)" metal/site.yaml
 
+terragrunt-init:
+	TF_LOG="$(TF_LOG)" TF_CLI_CONFIG_FILE="$(mkfile_dir)metal/roles/local_libvirt_workaround/.terraformrc" terragrunt --working-dir="$(DIR)" init -all -non-interactive
+
 terragrunt:
 	TF_LOG="$(TF_LOG)" TF_CLI_CONFIG_FILE="$(mkfile_dir)metal/roles/local_libvirt_workaround/.terraformrc" terragrunt --working-dir="$(DIR)" apply -all -non-interactive -auto-approve
 

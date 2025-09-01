@@ -15,3 +15,7 @@ As a workaround, I have an ansible role `metal/roles/local_libvirt_workaround` t
 ## Terragrunt will apply changes in `vms` directory even if no changes were made
 
 This happens because we generate a fresh random join token and id every time we run. This logic is in `vms/vm/ignition/k8s_join/config.tf`. This is needed for a better security, so this token is only valid for 1 hour. Need to figure out a good way to fix this.
+
+## K8s apps have a permission issue when trying to access the mounted dir
+
+I can use `setenforce 0` in VM which fixes the issue. Need to find a proper solutuon for this.
