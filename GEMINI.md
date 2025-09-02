@@ -141,6 +141,14 @@ virsh -c 'qemu+tls://10.42.0.1/system' version
 
 I can also use SSH to access Tesseract directly.
 
+## SELinux and VirtioFS for K8s Pods
+
+An important architectural point is how SELinux contexts are handled when sharing directories from the host into Kubernetes pods running within VMs.
+
+- **The Challenge**: K8s pods (running with the `container_t` SELinux context) need to access storage shared from the host via `virtiofs`. The Fedora CoreOS kernel inside the VM automatically labels the contents of any `virtiofs` mount with the `virtiofs_t` context. The default SELinux policy on the VM does not allow a `container_t` process to write to a `virtiofs_t` directory, leading to "Permission denied" errors.
+
+- **The Solution**: We use the VM's Ignition configuration to install a custom SELinux policy module on first boot. This module adds a specific rule that allows processes with the `container_t` context to have full read/write/create/delete access to files and directories labeled with the `virtiofs_t` context. This is handled in `vms/vm/ignition/base/selinux.tf`. This process requires the `selinux-policy-devel` package, which is also installed via Ignition.
+
 ## Additional instructions
 
 When encountering new important information that might be useful in subsequent re-runs please add it to GEMINI.md
